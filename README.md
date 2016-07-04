@@ -2,7 +2,7 @@
 
 Zap2xml is an epg grabber which creates an xmltv file from data scraped from Zap2it or TVguide listings.
 
-This addon is designed for use as a replacement for the perl xmltv apps that are dificult/impossible to use on a LibreELEC/OpenELEC distro since perl is not available.
+This addon is designed for use as a replacement for the perl xmltv apps that are difficult to use on a LibreELEC/OpenELEC distro since perl is not available.
 
 It has been tested using LibreELEC and OpenELEC running Tvheadend for the backend.
 
