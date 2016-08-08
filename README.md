@@ -18,5 +18,5 @@ It has been tested using LibreELEC and OpenELEC running Tvheadend for the backen
 6. Configure your tv backend to use tv_grab_zap2xml
 
 Notes:
-This addon is derived from the work of [FastEddyCurrent] (https://github.com/FastEddyCurrent/zap2xml)who ported the original perl based http://zap2xml.awardspace.info/ to Python.
+This addon is derived from the work of [FastEddyCurrent] (https://github.com/FastEddyCurrent/zap2xml) who ported the original perl based http://zap2xml.awardspace.info/ to Python.
 
