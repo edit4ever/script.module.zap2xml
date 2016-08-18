@@ -1227,13 +1227,13 @@ def enc(strng):
     global options
     t = strng
     if "-E" not in options:
-        t = re.sub("&[^#]","&amp;",t)
+        t = re.sub("&[^#]","&amp; ",t)
         t = re.sub("\"","&quot;",t)
         t = re.sub("\'","&apos;",t)
         t = re.sub("<","&lt;",t)
         t = re.sub(">","&gt;",t)
     else:
-        if re.search("amp",options["-E"]): t = re.sub("&[^#]","&amp;",t)
+        if re.search("amp",options["-E"]): t = re.sub("&[^#]","&amp; ",t)
         if re.search("quot",options["-E"]): t = re.sub("\"","&quot;",t)
         if re.search("apos",options["-E"]): t = re.sub("\'","&apos;",t)
         if re.search("lt",options["-E"]): t = re.sub("<","&lt;",t)
