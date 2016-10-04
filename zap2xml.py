@@ -1397,7 +1397,6 @@ def printProgrammes(fh):
 
         if "credits" in programs[p]:
             fh.write("\t\t<credits>\n")
-            global sortThing1, sortThing2
             sortThing1= str(p)
             sortThing2 = "credits"
             for g in sorted(programs[p]["credits"], cmp=sortThings):
