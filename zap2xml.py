@@ -1354,6 +1354,7 @@ def printProgrammes(fh):
                 live = ""
                 hd = ""
                 cc = ""
+                cast = ""
                 bullet = u" \u2022 "
                 if "originalAirDate" in programs[p]:
                     origdate = enc(convDateLocal(programs[p]["originalAirDate"]))
