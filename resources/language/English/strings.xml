@@ -17,6 +17,6 @@
 	<string id="32150">Download Program Icons</string>
 	<string id="32160">Download Extra Program Details</string>
 	<string id="32169">Add Delay If Extra Downloads Cause Failure</string>
-	<string id="32170">Delay Between http Requests</string>
+	<string id="32180">Delay Between http Requests</string>
 </strings>
 

@@ -17,6 +17,6 @@
     <setting label="32150" type="bool" id="picons" default="false"/>
     <setting label="32160" type="bool" id="xdetails" default="false"/>
     <setting label="32169" type="lsep" />
-    <setting label="32170" type="slider" id="delay" default="0" range="0,.25,3" option="float"/>
+    <setting label="32180" type="slider" id="delay" default="0" range="0,.25,3" option="float"/>
   </category>
 </settings>

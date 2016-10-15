@@ -320,14 +320,14 @@ def on_td (self, tag, attrs):
                 elif re.search('zc-g-S',my_dict[cls]):
                     programs[cp]["genres"]["sports"] = 1
 
-                if re.search("^MV",cp):
-                    programs[cp]["genres"]["movie"] = 1
-                elif re.search("^SP",cp):
-                    programs[cp]["genres"]["sports"] = 1
-                elif re.search("^EP",cp):
-                    programs[cp]["genres"]["series"] = 9
-                elif re.search("^SH",cp) and "-j" in options:
-                    programs[cp]["genres"]["series"] = 9
+#                if re.search('^MV',cp):
+#                    programs[cp]["genres"]["movie"] = 1
+#                elif re.search('^SP',cp):
+#                    programs[cp]["genres"]["sports"] = 1
+#                elif re.search('^EP',cp):
+#                    programs[cp]["genres"]["series"] = 9
+#                elif re.search('^SH',cp) and "-j" in options:
+#                    programs[cp]["genres"]["series"] = 9
 
                 if cp != -1 and "-D" in options:
                     fn = os.path.join(cacheDir,cp + ".js.gz")
@@ -396,7 +396,7 @@ def on_li(self, tag, attrs):
             schedule[cs][sch]["cc"] = 'CC'
         elif re.search('zc-ic',my_dict[cls]):
             on_li_zc_ic = True
-        elif re.search('zc-icons-live',my_dict[cls]):
+        elif re.search('zc-ic-live',my_dict[cls]):
             schedule[cs][sch]["live"] = 'Live'
             setOriginalAirDate()
         elif re.search('zc-icons-hd',my_dict[cls]):
@@ -1322,7 +1322,7 @@ def printProgrammes(fh):
             continue
         p = schedule[station][s]["program"]
         startTime = convTime(schedule[station][s]["time"])
-        startTZ= timezone(int(schedule[station][s]["time"]))
+        startTZ = timezone(int(schedule[station][s]["time"]))
         if "endtime" in schedule[station][s]:
             endTime = schedule[station][s]["endtime"]
         else:
@@ -1359,27 +1359,22 @@ def printProgrammes(fh):
                 if "originalAirDate" in programs[p]:
                     origdate = enc(convDateLocal(programs[p]["originalAirDate"]))
                     finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
-                    date = "Aired: " + finaldate
+                    date = "Originally Aired: " + finaldate
                 if "movie_year" in programs[p]:
                     date = "Released: " + programs[p]["movie_year"]
                 if "rating" in programs[p]:
-                    ratings = enc(programs[p]["rating"]) + bullet
+                    ratings = bullet + enc(programs[p]["rating"])
                 if "new" in schedule[station][s]:
-                    new = "NEW" + bullet
-                    origdate = startTime
-                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
-                    date = "Airs: " + finaldate
+                    new = "NEW"
+                    date = ""
                 if "live" in schedule[station][s]:
-                    live = "LIVE" + bullet
-                    origdate = startTime
-                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
-                    date = "Airs: " + finaldate
+                    live = "LIVE"
+                    date = ""
                 if "quality" in schedule[station][s]:
-                    hd = "HD" + bullet
+                    hd = bullet + "HD"
                 if "cc" in schedule[station][s]:
-                    cc = "CC" + bullet
+                    cc = bullet + "CC"
                 if "credits" in programs[p]:
-                    global sortThing1, sortThing2
                     sortThing1= str(p)
                     sortThing2 = "credits"
                     cast = "Cast: "
@@ -1391,8 +1386,8 @@ def printProgrammes(fh):
                             prev = g
                         else:
                             castlist = castlist + ", " + enc(g)
-                    cast = cast + castlist + bullet
-                tmp = tmp + live + new + ratings + hd + cc + cast + date
+                    cast = bullet + cast + castlist
+                tmp = tmp + live + new + date + ratings + hd + cc + cast
             tmp = tmp + end
             fh.write(tmp)
 
@@ -1459,10 +1454,12 @@ def printProgrammes(fh):
             cc = True
         if not new and not live and re.search("^EP|^SH|^\d", str(p)):
             fh.write("\t\t<previously-shown ")
+            oadTZ = ""
             if "originalAirDate" in programs[p]:
                 date = convDateLocal(programs[p]["originalAirDate"])
-                fh.write("start=\"" + date + "000000\" ")
-            fh.write("/>\n")
+                oadTZ = timezone(int(programs[p]["originalAirDate"]))
+                fh.write("start=\"" + date + "000000" + " " + oadTZ + "\"")
+            fh.write(" />\n")
         if new:
             fh.write("\t\t<new />\n")
         # not part of XMLTV format yet?
