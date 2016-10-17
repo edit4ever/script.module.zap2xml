@@ -1,4 +1,3 @@
-#!/bin/bash
 # zap2xml - zap2it tvschedule scraper -
 
 import time
