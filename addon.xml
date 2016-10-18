@@ -11,8 +11,8 @@
     <provides></provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <summary>Zap2It xmltv grabber</summary>
-    <description>zap2xml is an epg grabber which creates an xmltv file from data scraped from Zap2it or TVguide listings.</description>
+    <summary>zap2xml xmltv grabber</summary>
+    <description>zap2xml is an epg grabber which creates an xmltv file from data scraped from Zap2it or TVguide listings. Create your account on either site, including setting up favorites for the channels you want to download.  Then configure the zap2mxml grabber in the tvheadend web interface. </description>
     <disclaimer>
     </disclaimer>
     <platform>all</platform>
