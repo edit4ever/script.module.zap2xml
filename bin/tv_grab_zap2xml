@@ -66,4 +66,4 @@ do case "$1" in
 esac; shift
 done
 
-exit 0s
+exit 0
