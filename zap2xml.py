@@ -1427,7 +1427,7 @@ def printProgrammes(fh):
             ef = "E%0*d" % (max(2, len(str(e))), int(e))
             xs = int(ss) - 1
             xe = int(e) - 1
-            if ss > 0 or e > 0:
+            if int(ss) > 0 or int(e) > 0:
                 fh.write("\t\t<episode-num system=\"onscreen\">" + sf + ef + "</episode-num>\n")
 
         dd_prog_id = str(p)
