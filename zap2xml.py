@@ -1253,7 +1253,7 @@ def printHeader(fh , enc):
     fh.write("<tv source-info-url=\"http://tvguide.com/\" source-info-name=\"tvguide.com\"")
   else:
     fh.write("<tv source-info-url=\"http://tvschedule.zap2it.com/\" source-info-name=\"zap2it.com\"")
-  fh.write(" generator-info-name=\"zap2xml\" generator-info-url=\"https://github.com/FastEddyCurrent/zap2xml\">\n")
+  fh.write(" generator-info-name=\"script.module.zap2xml\" generator-info-url=\"https://github.com/edit4ever/script.module.zap2xml\">\n")
 
 def printFooter(fh):
   fh.write("</tv>\n")
