@@ -1343,6 +1343,7 @@ def printProgrammes(fh):
             else:
                 fh.write("Movie (" + programs[p]["movie_year"] + ")")
             fh.write("</sub-title>\n")
+
         if "description" in programs[p] and programs[p]["description"] is not None:
             fh.write("\t\t<desc lang=\"" + lang + "\">")
             tmp = enc(programs[p]["description"]) + " "
@@ -1359,21 +1360,25 @@ def printProgrammes(fh):
                 if "originalAirDate" in programs[p]:
                     origdate = enc(convDateLocal(programs[p]["originalAirDate"]))
                     finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
-                    date = "Originally Aired: " + finaldate
+                    date = "First aired: " + finaldate
                 if "movie_year" in programs[p]:
                     date = "Released: " + programs[p]["movie_year"]
                 if "rating" in programs[p]:
-                    ratings = bullet + enc(programs[p]["rating"])
+                    ratings = enc(programs[p]["rating"]) + bullet
                 if "new" in schedule[station][s]:
-                    new = "NEW"
-                    date = ""
+                    new = "NEW" + bullet
+                    origdate = startTime
+                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
+                    date = "First aired: " + finaldate
                 if "live" in schedule[station][s]:
-                    live = "LIVE"
-                    date = ""
+                    live = "LIVE" + bullet
+                    origdate = startTime
+                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
+                    date = "First aired: " + finaldate
                 if "quality" in schedule[station][s]:
-                    hd = bullet + "HD"
+                    hd = "HD" + bullet
                 if "cc" in schedule[station][s]:
-                    cc = bullet + "CC"
+                    cc = "CC" + bullet
                 if "credits" in programs[p]:
                     sortThing1= str(p)
                     sortThing2 = "credits"
@@ -1386,8 +1391,59 @@ def printProgrammes(fh):
                             prev = g
                         else:
                             castlist = castlist + ", " + enc(g)
-                    cast = bullet + cast + castlist
-                tmp = tmp + live + new + date + ratings + hd + cc + cast
+                    cast = cast + castlist + bullet
+                tmp = tmp + live + new + ratings + hd + cc + cast + date
+            tmp = tmp + end
+            fh.write(tmp)
+        else:
+            fh.write("\t\t<desc lang=\"" + lang + "\">")
+            tmp = ""
+            end = "</desc>\n"
+            if "-X" in options:
+                ratings = ""
+                date=""
+                new = ""
+                live = ""
+                hd = ""
+                cc = ""
+                cast = ""
+                bullet = u" \u2022 "
+                if "originalAirDate" in programs[p]:
+                    origdate = enc(convDateLocal(programs[p]["originalAirDate"]))
+                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
+                    date = "First aired: " + finaldate
+                if "movie_year" in programs[p]:
+                    date = "Released: " + programs[p]["movie_year"]
+                if "rating" in programs[p]:
+                    ratings = enc(programs[p]["rating"]) + bullet
+                if "new" in schedule[station][s]:
+                    new = "NEW" + bullet
+                    origdate = startTime
+                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
+                    date = "First aired: " + finaldate
+                if "live" in schedule[station][s]:
+                    live = "LIVE" + bullet
+                    origdate = startTime
+                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
+                    date = "First aired: " + finaldate
+                if "quality" in schedule[station][s]:
+                    hd = "HD" + bullet
+                if "cc" in schedule[station][s]:
+                    cc = "CC" + bullet
+                if "credits" in programs[p]:
+                    sortThing1= str(p)
+                    sortThing2 = "credits"
+                    cast = "Cast: "
+                    castlist = ""
+                    prev = None
+                    for g in sorted(programs[p]["credits"], cmp=sortThings):
+                        if prev is None:
+                            castlist = enc(g)
+                            prev = g
+                        else:
+                            castlist = castlist + ", " + enc(g)
+                    cast = cast + castlist + bullet
+                tmp = tmp + live + new + ratings + hd + cc + cast + date
             tmp = tmp + end
             fh.write(tmp)
 
