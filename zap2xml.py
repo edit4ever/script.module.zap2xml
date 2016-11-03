@@ -34,7 +34,6 @@ LWP::UserAgent #www.mechanize
 XML::LibXML
 libxml2
 lxml
-
 """
 
 
@@ -1253,7 +1252,7 @@ def printHeader(fh , enc):
     fh.write("<tv source-info-url=\"http://tvguide.com/\" source-info-name=\"tvguide.com\"")
   else:
     fh.write("<tv source-info-url=\"http://tvschedule.zap2it.com/\" source-info-name=\"zap2it.com\"")
-  fh.write(" generator-info-name=\"script.module.zap2xml\" generator-info-url=\"https://github.com/edit4ever/script.module.zap2xml\">\n")
+  fh.write(" generator-date=\"" + str(datetime.datetime.now()) + "\" generator-info-name=\"script.module.zap2xml\" generator-info-url=\"https://github.com/edit4ever/script.module.zap2xml\">\n")
 
 def printFooter(fh):
   fh.write("</tv>\n")
@@ -1345,107 +1344,19 @@ def printProgrammes(fh):
             fh.write("</sub-title>\n")
 
         if "description" in programs[p] and programs[p]["description"] is not None:
-            fh.write("\t\t<desc lang=\"" + lang + "\">")
-            tmp = enc(programs[p]["description"]) + " "
-            end = "</desc>\n"
+            xdets = ""
             if "-X" in options:
-                ratings = ""
-                date=""
-                new = ""
-                live = ""
-                hd = ""
-                cc = ""
-                cast = ""
-                bullet = u" \u2022 "
-                if "originalAirDate" in programs[p]:
-                    origdate = enc(convDateLocal(programs[p]["originalAirDate"]))
-                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
-                    date = "First aired: " + finaldate
-                if "movie_year" in programs[p]:
-                    date = "Released: " + programs[p]["movie_year"]
-                if "rating" in programs[p]:
-                    ratings = enc(programs[p]["rating"]) + bullet
-                if "new" in schedule[station][s]:
-                    new = "NEW" + bullet
-                    origdate = startTime
-                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
-                    date = "First aired: " + finaldate
-                if "live" in schedule[station][s]:
-                    live = "LIVE" + bullet
-                    origdate = startTime
-                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
-                    date = "First aired: " + finaldate
-                if "quality" in schedule[station][s]:
-                    hd = "HD" + bullet
-                if "cc" in schedule[station][s]:
-                    cc = "CC" + bullet
-                if "credits" in programs[p]:
-                    sortThing1= str(p)
-                    sortThing2 = "credits"
-                    cast = "Cast: "
-                    castlist = ""
-                    prev = None
-                    for g in sorted(programs[p]["credits"], cmp=sortThings):
-                        if prev is None:
-                            castlist = enc(g)
-                            prev = g
-                        else:
-                            castlist = castlist + ", " + enc(g)
-                    cast = cast + castlist + bullet
-                tmp = tmp + live + new + ratings + hd + cc + cast + date
-            tmp = tmp + end
-            fh.write(tmp)
+                xdets = addXDetails(programs[p], schedule[station][s])
+                tmp = enc(programs[p]["description"])
+                fh.write("\t\t<desc lang=\"" + lang + "\">" + xdets + "</desc>\n")
+            else:
+                fh.write("\t\t<desc lang=\"" + lang + "\">" + tmp + "</desc>\n")
         else:
-            fh.write("\t\t<desc lang=\"" + lang + "\">")
-            tmp = ""
-            end = "</desc>\n"
             if "-X" in options:
-                ratings = ""
-                date=""
-                new = ""
-                live = ""
-                hd = ""
-                cc = ""
-                cast = ""
-                bullet = u" \u2022 "
-                if "originalAirDate" in programs[p]:
-                    origdate = enc(convDateLocal(programs[p]["originalAirDate"]))
-                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
-                    date = "First aired: " + finaldate
-                if "movie_year" in programs[p]:
-                    date = "Released: " + programs[p]["movie_year"]
-                if "rating" in programs[p]:
-                    ratings = enc(programs[p]["rating"]) + bullet
-                if "new" in schedule[station][s]:
-                    new = "NEW" + bullet
-                    origdate = startTime
-                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
-                    date = "First aired: " + finaldate
-                if "live" in schedule[station][s]:
-                    live = "LIVE" + bullet
-                    origdate = startTime
-                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
-                    date = "First aired: " + finaldate
-                if "quality" in schedule[station][s]:
-                    hd = "HD" + bullet
-                if "cc" in schedule[station][s]:
-                    cc = "CC" + bullet
-                if "credits" in programs[p]:
-                    sortThing1= str(p)
-                    sortThing2 = "credits"
-                    cast = "Cast: "
-                    castlist = ""
-                    prev = None
-                    for g in sorted(programs[p]["credits"], cmp=sortThings):
-                        if prev is None:
-                            castlist = enc(g)
-                            prev = g
-                        else:
-                            castlist = castlist + ", " + enc(g)
-                    cast = cast + castlist + bullet
-                tmp = tmp + live + new + ratings + hd + cc + cast + date
-            tmp = tmp + end
-            fh.write(tmp)
+                xdets = addXDetails(programs[p], schedule[station][s])
+                fh.write("\t\t<desc lang=\"" + lang + "\">" + xdets + "</desc>\n")
+            else:
+                fh.write("\t\t<desc lang=\"" + lang + "\">" + "</desc>\n")
 
         if "credits" in programs[p]:
             fh.write("\t\t<credits>\n")
@@ -1485,18 +1396,17 @@ def printProgrammes(fh):
             xe = int(e) - 1
             if int(ss) > 0 or int(e) > 0:
                 fh.write("\t\t<episode-num system=\"onscreen\">" + sf + ef + "</episode-num>\n")
+                fh.write("\t\t<episode-num system=\"xmltv_ns\">" + ("%d" % xs) +  "." + ("%d" % xe) + ".</episode-num>\n")
 
         dd_prog_id = str(p)
         tmp = re.search("^(..\d{8})(\d{4})",dd_prog_id)
         if tmp:
             dd_prog_id = "%s.%s" % (tmp.group(1),tmp.group(2))
             fh.write("\t\t<episode-num system=\"dd_progid\">" + dd_prog_id  + "</episode-num>\n")
-        if xs is not None and xe is not None and xs >= 0 and xe >= 0:
-            fh.write("\t\t<episode-num system=\"xmltv_ns\">" + ("%d" % xs) +  "." + ("%d" % xe) + ".</episode-num>\n")
         if "quality" in  schedule[station][s]:
             fh.write("\t\t<video>\n")
             fh.write("\t\t\t<aspect>16:9</aspect>\n")
-            fh.write("\t\t\t<quality>HDTV</quality>\n")
+            fh.write("\t\t\t<quality>" + schedule[station][s]['quality'] + "</quality>\n")
             fh.write("\t\t</video>\n")
 
         new = False
@@ -1530,6 +1440,88 @@ def printProgrammes(fh):
         fh.write("\t</programme>\n")
         i += 1
 
+
+def addXDetails(program, schedule):
+    #log.pout(program)
+    ratings = ""
+    date= ""
+    new = ""
+    live = ""
+    hd = ""
+    cc = ""
+    cast = ""
+    season = ""
+    epis = ""
+    episqts = ""
+    prog = ""
+    plot= ""
+    descsort = ""
+    bullet = u"\u2022 "
+    hyphen = u"\u2013 "
+    if "originalAirDate" in program and not new and not live:
+        origdate = enc(convDateLocal(program["originalAirDate"]))
+        finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
+        date = "First aired: " + finaldate
+    if "movie_year" in program:
+        date = "Released: " + program["movie_year"]
+    if "rating" in program:
+        ratings = enc(program["rating"])
+    if "new" in schedule:
+        new = "NEW"
+    if "live" in schedule:
+        live = "LIVE"
+    if "quality" in schedule:
+        hd = schedule['quality']
+    if "cc" in schedule:
+        cc = schedule['cc']
+    if "seasonNum" in program and "episodeNum" in program:
+        ss = program["seasonNum"]
+        sf =  "Season %0*d " % (max(2, len(str(ss))), int(ss))
+        e = program["episodeNum"]
+        ef = "Episode %0*d" % (max(2, len(str(e))), int(e))
+        season = sf + " - " + ef
+#    if "credits" in programs[p]:
+#        sortThing1 = str(p)
+#        sortThing2 = "credits"
+#        cast = "Cast: "
+#        castlist = ""
+#        prev = None
+#        for g in sorted(programs[p]["credits"], cmp=sortThings):
+#            if prev is None:
+#                castlist = enc(g)
+#                prev = g
+#            else:
+#                castlist = castlist + ", " + enc(g)
+#            cast = cast + castlist
+    if 'title' in program:
+        prog = enc(program['title'])
+    if 'episode' in program:
+        epis = enc(program['episode'])
+        episqts = '\"' + enc(program['episode']) + '\"'
+    if 'description' in program:
+        plot = enc(program['description'])
+    if "-V" in options:
+        descsort = options["-V"]
+        descsort = re.sub("z13y", cast + " ", descsort)
+        descsort = re.sub("z12y", episqts + " ", descsort)
+        descsort = re.sub("z11y", epis + " ", descsort)
+        descsort = re.sub("z10y", prog + " ", descsort)
+        descsort = re.sub("z9y", date + " ", descsort)
+        descsort = re.sub("z8y", ratings + " ", descsort)
+        descsort = re.sub("z7y", season + " ", descsort)
+        descsort = re.sub("z6y", cc + " ", descsort)
+        descsort = re.sub("z5y", hd + " ", descsort)
+        descsort = re.sub("z4y", new + live + " ", descsort)
+        descsort = re.sub("z3y", plot + " ", descsort)
+        descsort = re.sub("z2y", hyphen, descsort)
+        descsort = re.sub("z1y", bullet, descsort)
+        descsort = re.sub("z0y", "", descsort)
+        descsort = re.sub(hyphen + " +" + bullet, bullet, descsort)         #removes back to back hyphen/bullet when other details are blank
+        descsort = re.sub(bullet + " +" + hyphen, hyphen, descsort)        #removes back to back bullet/hyphen when other details are blank
+        descsort = re.sub(bullet + " +" + bullet, bullet, descsort)          #removes duplicate bullets when other details are blank
+        descsort = re.sub(hyphen + " +" + hyphen, hyphen, descsort)          #removes duplicate hyphens when other details are blank
+    result = descsort
+    return result
 
 def printHeaderXTVD(fh, enc):
     global XTVD_startTime, XTVD_endTime
@@ -1716,10 +1708,10 @@ def option_parse():
     global options
     global confFile, start, days, ncdays, ncsdays, retries, outFile, cacheDir, iconDir, trailerDir
     global lang, userEmail, password, proxy, postalcode, lineupId, sleeptime, shiftMinutes
-    global outputXTVD, includeXMLTV, lineuptype, lineupname, lineuplocation, zlineupId, zipcode
+    global outputXTVD, includeXMLTV, lineuptype, lineupname, lineuplocation, zlineupId, zipcode, descsort
 
     optlist = args = None
-    optlist, args  = getopt.getopt(sys.argv[1:], "?aA:bc:C:d:DeE:Fgi:Il:jJ:Lm:Mn:N:o:Op:P:qr:s:S:t:Tu:UwxY:zZ:X")
+    optlist, args  = getopt.getopt(sys.argv[1:], "?aA:bc:C:d:DeE:Fgi:Il:jJ:Lm:Mn:N:o:Op:P:qr:s:S:t:Tu:UwxY:zZ:XV:")
     options = dict(optlist)
     if "-?" in options:
         printHelp()
@@ -1771,6 +1763,8 @@ def option_parse():
                 lineuplocation = rtrim(last_reSearchObj.group(1))
             elif reSearch("^\s*postalcode\s*=\s*(.+)", conf,re.IGNORECASE):
                 postalcode = rtrim(last_reSearchObj.group(1))
+            elif reSearch("^\s*descsort\s*=\s*(.+)", conf,re.IGNORECASE):
+                descsort = rtrim(last_reSearchObj.group(1))
 
 
     if optlist is None and userEmail is None:
@@ -1797,6 +1791,7 @@ def option_parse():
     if "-J" in options and os.path.exists(options["-J"]): includeXMLTV = options["-J"]
     if "-S" in options: sleeptime = float(options["-S"])
     if "-m" in options: shiftMinutes = int(options["-m"])
+    if "-V" in options: descsort = options["-V"]
 
 
 
