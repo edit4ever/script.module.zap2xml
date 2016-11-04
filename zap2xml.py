@@ -1396,13 +1396,15 @@ def printProgrammes(fh):
             xe = int(e) - 1
             if int(ss) > 0 or int(e) > 0:
                 fh.write("\t\t<episode-num system=\"onscreen\">" + sf + ef + "</episode-num>\n")
-                fh.write("\t\t<episode-num system=\"xmltv_ns\">" + ("%d" % xs) +  "." + ("%d" % xe) + ".</episode-num>\n")
 
         dd_prog_id = str(p)
         tmp = re.search("^(..\d{8})(\d{4})",dd_prog_id)
         if tmp:
             dd_prog_id = "%s.%s" % (tmp.group(1),tmp.group(2))
             fh.write("\t\t<episode-num system=\"dd_progid\">" + dd_prog_id  + "</episode-num>\n")
+        if xs is not None and xe is not None and xs >= 0 and xe >= 0:
+            fh.write("\t\t<episode-num system=\"xmltv_ns\">" + ("%d" % xs) +  "." + ("%d" % xe) + ".</episode-num>\n")
+
         if "quality" in  schedule[station][s]:
             fh.write("\t\t<video>\n")
             fh.write("\t\t\t<aspect>16:9</aspect>\n")
@@ -1527,6 +1529,7 @@ def addXDetails(program, schedule):
         descsort = re.sub(bullet + " *" + bullet, bullet, descsort)          #removes re.sub leftover duplicate bullets when other details are blank
         descsort = re.sub(hyphen + " *" + hyphen, hyphen, descsort)          #removes re.sub leftover duplicate hyphens when other details are blank
         descsort = re.sub(" +", " ", descsort)                             #removes duplicate spaces when other details are blank
+        descsort = re.sub(r'^[^a-zA-Z0-9_&]*', '', descsort)                # removes a leading bullet or hyphen which is leftover when other fields are empty
     result = descsort
     return result
 
