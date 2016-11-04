@@ -887,7 +887,7 @@ def parseJSOND(fn):
     if "credits" in p:
         credits = p["credits"]
         i = 1
-        if"credits" not in programs[cp]:
+        if "credits" not in programs[cp]:
             programs[cp]["credits"] = {}
         for g in credits:
             programs[cp]["credits"][g] = i
@@ -1444,7 +1444,8 @@ def printProgrammes(fh):
 def addXDetails(program, schedule):
     #log.pout(program)
     ratings = ""
-    date= ""
+    date = ""
+    myear = ""
     new = ""
     live = ""
     hd = ""
@@ -1456,14 +1457,15 @@ def addXDetails(program, schedule):
     prog = ""
     plot= ""
     descsort = ""
-    bullet = u"\u2022 "
-    hyphen = u"\u2013 "
+    bullet = u"\u2022"
+    hyphen = u"\u2013"
+    lbreak = "\n"
     if "originalAirDate" in program and not new and not live:
         origdate = enc(convDateLocal(program["originalAirDate"]))
         finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
         date = "First aired: " + finaldate
     if "movie_year" in program:
-        date = "Released: " + program["movie_year"]
+        myear = "Released: " + program["movie_year"]
     if "rating" in program:
         ratings = enc(program["rating"])
     if "new" in schedule:
@@ -1479,7 +1481,7 @@ def addXDetails(program, schedule):
         sf =  "Season %0*d " % (max(2, len(str(ss))), int(ss))
         e = program["episodeNum"]
         ef = "Episode %0*d" % (max(2, len(str(e))), int(e))
-        season = sf + " - " + ef
+        season = sf + u"\u2010 " + ef
 #    if "credits" in programs[p]:
 #        sortThing1 = str(p)
 #        sortThing2 = "credits"
@@ -1497,11 +1499,13 @@ def addXDetails(program, schedule):
         prog = enc(program['title'])
     if 'episode' in program:
         epis = enc(program['episode'])
-        episqts = '\"' + enc(program['episode']) + '\"'
+        episqts = "&quot;" + enc(program['episode']) + "&quot;"
     if 'description' in program:
         plot = enc(program['description'])
     if "-V" in options:
         descsort = options["-V"]
+        descsort = re.sub("z15y", lbreak, descsort)
+        descsort = re.sub("z14y", myear, descsort)
         descsort = re.sub("z13y", cast + " ", descsort)
         descsort = re.sub("z12y", episqts + " ", descsort)
         descsort = re.sub("z11y", epis + " ", descsort)
@@ -1513,13 +1517,16 @@ def addXDetails(program, schedule):
         descsort = re.sub("z5y", hd + " ", descsort)
         descsort = re.sub("z4y", new + live + " ", descsort)
         descsort = re.sub("z3y", plot + " ", descsort)
-        descsort = re.sub("z2y", hyphen, descsort)
-        descsort = re.sub("z1y", bullet, descsort)
+        descsort = re.sub("z2y", hyphen + " ", descsort)
+        descsort = re.sub("z1y", bullet + " ", descsort)
         descsort = re.sub("z0y", "", descsort)
-        descsort = re.sub(hyphen + " +" + bullet, bullet, descsort)         #removes back to back hyphen/bullet when other details are blank
-        descsort = re.sub(bullet + " +" + hyphen, hyphen, descsort)        #removes back to back bullet/hyphen when other details are blank
-        descsort = re.sub(bullet + " +" + bullet, bullet, descsort)          #removes duplicate bullets when other details are blank
-        descsort = re.sub(hyphen + " +" + hyphen, hyphen, descsort)          #removes duplicate hyphens when other details are blank
+        descsort = re.sub(hyphen + " *" + bullet, bullet, descsort)         #removes back to back hyphen/bullet when other details are blank
+        descsort = re.sub(bullet + " *" + hyphen, hyphen, descsort)        #removes back to back bullet/hyphen when other details are blank
+        descsort = re.sub(bullet + " *" + bullet, bullet, descsort)          #removes duplicate bullets when other details are blank
+        descsort = re.sub(hyphen + " *" + hyphen, hyphen, descsort)          #removes duplicate hyphens when other details are blank
+        descsort = re.sub(bullet + " *" + bullet, bullet, descsort)          #removes re.sub leftover duplicate bullets when other details are blank
+        descsort = re.sub(hyphen + " *" + hyphen, hyphen, descsort)          #removes re.sub leftover duplicate hyphens when other details are blank
+        descsort = re.sub(" +", " ", descsort)                             #removes duplicate spaces when other details are blank
     result = descsort
     return result
 

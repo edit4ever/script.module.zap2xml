@@ -49,9 +49,11 @@
 	<string id="32306">CC Indicator</string>
 	<string id="32307">Season/Episode Number</string>
 	<string id="32308">TV Rating</string>
-	<string id="32309">Original Air Date or Movie Release Year</string>
+	<string id="32309">Original Air Date</string>
 	<string id="32310">Program Title</string>
 	<string id="32311">Episode Title</string>
 	<string id="32312">Episode Title in Quotes</string>
 	<string id="32313">Cast</string>
+	<string id="32314">Movie Release Year</string>
+	<string id="32320">LINE BREAK</string>
 </strings>
