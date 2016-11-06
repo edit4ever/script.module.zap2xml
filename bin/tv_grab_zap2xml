@@ -19,8 +19,8 @@
 
 . /etc/profile
 
-ADDON_HOME="$HOME/.kodi/userdata/addon_data/script.module.zap2xml"
-ADDON_DIR="$HOME/.kodi/addons/script.module.zap2xml"
+ADDON_HOME="$HOME/zap2xml"
+ADDON_DIR="$HOME/zap2xml"
 ADDON_SETTINGS="$ADDON_HOME/settings.xml"
 XMLTV_OUTPUT="$ADDON_HOME/xmltv.xml"
 if [ $# -lt 1 ]
@@ -37,29 +37,9 @@ then
   PROGRAMICONS=`grep id=\"picons\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=,," -e "s,true,-I," -e "s,false,," -e "s,\",,g"`
   EXTRADETAILS=`grep id=\"xdetails\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=,," -e "s,true,-D," -e "s,false,," -e "s,\",,g"`
   EXTRADESCRIPTION=`grep id=\"xdesc\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=,," -e "s,true,-X," -e "s,false,," -e "s,\",,g"`
-  DS1=`grep id=\"desc1\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS2=`grep id=\"desc2\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS3=`grep id=\"desc3\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS4=`grep id=\"desc4\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS5=`grep id=\"desc5\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS6=`grep id=\"desc6\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS7=`grep id=\"desc7\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS8=`grep id=\"desc8\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS9=`grep id=\"desc9\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS10=`grep id=\"desc10\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS11=`grep id=\"desc11\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS12=`grep id=\"desc12\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS13=`grep id=\"desc13\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS14=`grep id=\"desc14\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS15=`grep id=\"desc15\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS16=`grep id=\"desc16\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS17=`grep id=\"desc17\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS18=`grep id=\"desc18\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS19=`grep id=\"desc19\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DS20=`grep id=\"desc20\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=\",z," -e "s,\",y,"`
-  DESCSORT=$DS1$DS2$DS3$DS4$DS5$DS6$DS7$DS8$DS9$DS10$DS11$DS12$DS13$DS14$DS15$DS16$DS17$DS18$DS19$DS20
-  python $ADDON_DIR/zap2xml.py -u $USERID -p $PASSWORD -o $XMLTV_OUTPUT $EPGSOURCE $NUMDAYS $CHFIRST $ALLCHANNELS $CHANNELICONS $PROGRAMICONS $EXTRADETAILS $EXTRADESCRIPTION -V $DESCSORT > zap2xml.log 2>&1
-  cat $XMLTV_OUTPUT
+  DESCSORT=`grep id=\"desc\"* $ADDON_SETTINGS | awk -v ORS=, '{gsub(/"/, "");print $3}' | tr -s 'value=' ' ' | sed 's/ //g' | echo "[$(cat)]" `
+  python $ADDON_DIR/zap2xml.py -u $USERID -p $PASSWORD -o $XMLTV_OUTPUT $EPGSOURCE $NUMDAYS $CHFIRST $ALLCHANNELS $CHANNELICONS $PROGRAMICONS $EXTRADETAILS $EXTRADESCRIPTION -V $DESCSORT #> zap2xml.log 2>&1
+#  cat $XMLTV_OUTPUT
   cd $CD
   exit 0
 fi
