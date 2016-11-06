@@ -21,6 +21,7 @@ import urllib
 import inspect
 import urllib2
 import datetime
+import ast
 """
 import requests
 from requests.auth import HTTPBasicAuth
@@ -887,7 +888,7 @@ def parseJSOND(fn):
     if "credits" in p:
         credits = p["credits"]
         i = 1
-        if "credits" not in programs[cp]:
+        if"credits" not in programs[cp]:
             programs[cp]["credits"] = {}
         for g in credits:
             programs[cp]["credits"][g] = i
@@ -1345,9 +1346,9 @@ def printProgrammes(fh):
 
         if "description" in programs[p] and programs[p]["description"] is not None:
             xdets = ""
-            tmp = enc(programs[p]["description"])
             if "-X" in options:
                 xdets = addXDetails(programs[p], schedule[station][s])
+                tmp = enc(programs[p]["description"])
                 fh.write("\t\t<desc lang=\"" + lang + "\">" + xdets + "</desc>\n")
             else:
                 fh.write("\t\t<desc lang=\"" + lang + "\">" + tmp + "</desc>\n")
@@ -1396,15 +1397,13 @@ def printProgrammes(fh):
             xe = int(e) - 1
             if int(ss) > 0 or int(e) > 0:
                 fh.write("\t\t<episode-num system=\"onscreen\">" + sf + ef + "</episode-num>\n")
+                fh.write("\t\t<episode-num system=\"xmltv_ns\">" + ("%d" % xs) +  "." + ("%d" % xe) + ".</episode-num>\n")
 
         dd_prog_id = str(p)
         tmp = re.search("^(..\d{8})(\d{4})",dd_prog_id)
         if tmp:
             dd_prog_id = "%s.%s" % (tmp.group(1),tmp.group(2))
             fh.write("\t\t<episode-num system=\"dd_progid\">" + dd_prog_id  + "</episode-num>\n")
-        if xs is not None and xe is not None and xs >= 0 and xe >= 0:
-            fh.write("\t\t<episode-num system=\"xmltv_ns\">" + ("%d" % xs) +  "." + ("%d" % xe) + ".</episode-num>\n")
-
         if "quality" in  schedule[station][s]:
             fh.write("\t\t<video>\n")
             fh.write("\t\t\t<aspect>16:9</aspect>\n")
@@ -1444,10 +1443,9 @@ def printProgrammes(fh):
 
 
 def addXDetails(program, schedule):
-    #log.pout(program)
+
     ratings = ""
-    date = ""
-    myear = ""
+    date= ""
     new = ""
     live = ""
     hd = ""
@@ -1459,15 +1457,14 @@ def addXDetails(program, schedule):
     prog = ""
     plot= ""
     descsort = ""
-    bullet = u"\u2022"
-    hyphen = u"\u2013"
-    lbreak = "\n"
+    bullet = " "+u"\u2022 "+" "
+    hyphen = u"\u2013 "
     if "originalAirDate" in program and not new and not live:
         origdate = enc(convDateLocal(program["originalAirDate"]))
         finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
         date = "First aired: " + finaldate
     if "movie_year" in program:
-        myear = "Released: " + program["movie_year"]
+        date = "Released: " + program["movie_year"]
     if "rating" in program:
         ratings = enc(program["rating"])
     if "new" in schedule:
@@ -1483,55 +1480,60 @@ def addXDetails(program, schedule):
         sf =  "Season %0*d " % (max(2, len(str(ss))), int(ss))
         e = program["episodeNum"]
         ef = "Episode %0*d" % (max(2, len(str(e))), int(e))
-        season = sf + u"\u2010 " + ef
-#    if "credits" in programs[p]:
-#        sortThing1 = str(p)
-#        sortThing2 = "credits"
-#        cast = "Cast: "
-#        castlist = ""
-#        prev = None
-#        for g in sorted(programs[p]["credits"], cmp=sortThings):
-#            if prev is None:
-#                castlist = enc(g)
-#                prev = g
-#            else:
-#                castlist = castlist + ", " + enc(g)
-#            cast = cast + castlist
+        season = sf + " " + ef
+
+    if "credits" in program:
+        #sortThing1 = str(program)
+        #sortThing2 = "credits"
+        cast = "Cast: "
+        castlist = ""
+        prev = None
+        for g in program["credits"]:
+            if prev is None:
+                castlist = enc(g)
+                prev = g
+            else:
+                castlist = castlist + ", " + enc(g)
+            cast = cast + castlist
+
     if 'title' in program:
         prog = enc(program['title'])
     if 'episode' in program:
         epis = enc(program['episode'])
-        episqts = "&quot;" + enc(program['episode']) + "&quot;"
+        episqts = '\"' + enc(program['episode']) + '\"'
     if 'description' in program:
         plot = enc(program['description'])
     if "-V" in options:
-        descsort = options["-V"]
-        descsort = re.sub("z15y", lbreak, descsort)
-        descsort = re.sub("z14y", myear, descsort)
-        descsort = re.sub("z13y", cast + " ", descsort)
-        descsort = re.sub("z12y", episqts + " ", descsort)
-        descsort = re.sub("z11y", epis + " ", descsort)
-        descsort = re.sub("z10y", prog + " ", descsort)
-        descsort = re.sub("z9y", date + " ", descsort)
-        descsort = re.sub("z8y", ratings + " ", descsort)
-        descsort = re.sub("z7y", season + " ", descsort)
-        descsort = re.sub("z6y", cc + " ", descsort)
-        descsort = re.sub("z5y", hd + " ", descsort)
-        descsort = re.sub("z4y", new + live + " ", descsort)
-        descsort = re.sub("z3y", plot + " ", descsort)
-        descsort = re.sub("z2y", hyphen + " ", descsort)
-        descsort = re.sub("z1y", bullet + " ", descsort)
-        descsort = re.sub("z0y", "", descsort)
-        descsort = re.sub(hyphen + " *" + bullet, bullet, descsort)         #removes back to back hyphen/bullet when other details are blank
-        descsort = re.sub(bullet + " *" + hyphen, hyphen, descsort)        #removes back to back bullet/hyphen when other details are blank
-        descsort = re.sub(bullet + " *" + bullet, bullet, descsort)          #removes duplicate bullets when other details are blank
-        descsort = re.sub(hyphen + " *" + hyphen, hyphen, descsort)          #removes duplicate hyphens when other details are blank
-        descsort = re.sub(bullet + " *" + bullet, bullet, descsort)          #removes re.sub leftover duplicate bullets when other details are blank
-        descsort = re.sub(hyphen + " *" + hyphen, hyphen, descsort)          #removes re.sub leftover duplicate hyphens when other details are blank
-        descsort = re.sub(" +", " ", descsort)                             #removes duplicate spaces when other details are blank
-        descsort = re.sub(r'^[^a-zA-Z0-9_&]*', '', descsort)                # removes a leading bullet or hyphen which is leftover when other fields are empty
-    result = descsort
-    return result
+        optList = ast.literal_eval(options["-V"])
+        #print optList
+        separator = bullet
+        def getSortName(opt):
+            return {
+                1: bullet,
+                2: hyphen,
+                3: plot,
+                4: new,
+                5: hd,
+                6: cc,
+                7: season,
+                8: ratings,
+                9: date,
+                10: prog,
+                11: epis,
+                12: episqts,
+                13: cast,
+            }.get(opt, None)
+
+        def makeDescsortList(sortNums):
+            sortOrderList =[]
+            for opt in sortNums:
+                thisOption = getSortName(int(opt))
+                if thisOption:
+                    sortOrderList.append(thisOption)
+
+            return sortOrderList
+            descsort = separator.join(makeDescsortList(sortNums))
+        return descsort
 
 def printHeaderXTVD(fh, enc):
     global XTVD_startTime, XTVD_endTime
