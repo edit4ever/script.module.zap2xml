@@ -1530,7 +1530,8 @@ def addXDetails(program, schedule):
         descsort = re.sub(hyphen + " *" + hyphen, hyphen, descsort)          #removes re.sub leftover duplicate hyphens when other details are blank
         descsort = re.sub(" +", " ", descsort)                             #removes duplicate spaces when other details are blank
         descsort = re.sub(r'^[^a-zA-Z0-9_&]*', '', descsort)                # removes a leading bullet or hyphen which is leftover when other fields are empty
-    result = descsort
+    htmlparser = HTMLParser()
+    result = htmlparser.unescape(descsort)
     return result
 
 def printHeaderXTVD(fh, enc):
