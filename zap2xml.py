@@ -1457,7 +1457,7 @@ def addXDetails(program, schedule):
     prog = ""
     plot= ""
     descsort = ""
-    bullet = " "+u"\u2022 "+" "
+    bullet = u" \u2022 "
     hyphen = u"\u2013 "
     if "originalAirDate" in program and not new and not live:
         origdate = enc(convDateLocal(program["originalAirDate"]))
@@ -1524,15 +1524,17 @@ def addXDetails(program, schedule):
                 13: cast,
             }.get(opt, None)
 
-        def makeDescsortList(sortNums):
+        def makeDescsortList(optList):
             sortOrderList =[]
-            for opt in sortNums:
+            for opt in optList:
                 thisOption = getSortName(int(opt))
-                if thisOption:
+                #log.pout(thisOption) 
+                if thisOption and not ("NEW" in sortOrderList and opt == 9):
                     sortOrderList.append(thisOption)
 
             return sortOrderList
-            descsort = separator.join(makeDescsortList(sortNums))
+
+        descsort = separator.join(makeDescsortList(optList))
         return descsort
 
 def printHeaderXTVD(fh, enc):
