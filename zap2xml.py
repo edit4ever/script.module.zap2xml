@@ -1505,8 +1505,7 @@ def addXDetails(program, schedule):
         plot = enc(program['description'])
     if "-V" in options:
         optList = ast.literal_eval(options["-V"])
-        #print optList
-        separator = bullet
+
         def getSortName(opt):
             return {
                 1: bullet,
@@ -1526,15 +1525,19 @@ def addXDetails(program, schedule):
 
         def makeDescsortList(optList):
             sortOrderList =[]
+            lastOption = "True"
             for opt in optList:
                 thisOption = getSortName(int(opt))
-                #log.pout(thisOption) 
-                if thisOption and not ("NEW" in sortOrderList and opt == 9):
+                if thisOption and int(opt) <= 2 and lastOption <= 2:
+                    lastOption = int(opt)
+                elif thisOption and lastOption:
                     sortOrderList.append(thisOption)
-
+                    lastOption = int(opt)
+                elif thisOption:
+                    lastOption = int(opt)
             return sortOrderList
 
-        descsort = separator.join(makeDescsortList(optList))
+        descsort = " ".join(makeDescsortList(optList))
         return descsort
 
 def printHeaderXTVD(fh, enc):
