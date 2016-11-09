@@ -1459,6 +1459,7 @@ def addXDetails(program, schedule):
     descsort = ""
     bullet = u" \u2022 "
     hyphen = u"\u2013 "
+    newLine = u"\n"
     if "originalAirDate" in program and not new and not live:
         origdate = enc(convDateLocal(program["originalAirDate"]))
         finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
@@ -1510,17 +1511,18 @@ def addXDetails(program, schedule):
             return {
                 1: bullet,
                 2: hyphen,
-                3: plot,
-                4: new,
-                5: hd,
-                6: cc,
-                7: season,
-                8: ratings,
-                9: date,
-                10: prog,
-                11: epis,
-                12: episqts,
-                13: cast,
+                3: newLine,
+                4: plot,
+                5: new,
+                6: hd,
+                7: cc,
+                8: season,
+                9: ratings,
+                10: date,
+                11: prog,
+                12: epis,
+                13: episqts,
+                14: cast,
             }.get(opt, None)
 
         def makeDescsortList(optList):
@@ -1528,7 +1530,7 @@ def addXDetails(program, schedule):
             lastOption = "True"
             for opt in optList:
                 thisOption = getSortName(int(opt))
-                if thisOption and int(opt) <= 2 and lastOption <= 2:
+                if thisOption and int(opt) <= 3 and lastOption <= 3:
                     lastOption = int(opt)
                 elif thisOption and lastOption:
                     sortOrderList.append(thisOption)
