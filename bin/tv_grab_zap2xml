@@ -19,8 +19,8 @@
 
 . /etc/profile
 
-ADDON_HOME="$HOME/zap2xml"
-ADDON_DIR="$HOME/zap2xml"
+ADDON_HOME="$HOME/.kodi/userdata/addon_data/script.module.schmell2xml"
+ADDON_DIR="$HOME/.kodi/addons/script.module.schmell2xml"
 ADDON_SETTINGS="$ADDON_HOME/settings.xml"
 XMLTV_OUTPUT="$ADDON_HOME/xmltv.xml"
 if [ $# -lt 1 ]
@@ -38,8 +38,8 @@ then
   EXTRADETAILS=`grep id=\"xdetails\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=,," -e "s,true,-D," -e "s,false,," -e "s,\",,g"`
   EXTRADESCRIPTION=`grep id=\"xdesc\" $ADDON_SETTINGS | awk '{print $3 }' | sed -e "s,value=,," -e "s,true,-X," -e "s,false,," -e "s,\",,g"`
   DESCSORT=`grep id=\"desc\"* $ADDON_SETTINGS | awk -v ORS=, '{gsub(/"/, "");print $3}' | tr -s 'value=' ' ' | sed 's/ //g' | echo "[$(cat)]" `
-  python $ADDON_DIR/zap2xml.py -u $USERID -p $PASSWORD -o $XMLTV_OUTPUT $EPGSOURCE $NUMDAYS $CHFIRST $ALLCHANNELS $CHANNELICONS $PROGRAMICONS $EXTRADETAILS $EXTRADESCRIPTION -V $DESCSORT #> zap2xml.log 2>&1
-#  cat $XMLTV_OUTPUT
+  python $ADDON_DIR/zap2xml.py -u $USERID -p $PASSWORD -o $XMLTV_OUTPUT $EPGSOURCE $NUMDAYS $CHFIRST $ALLCHANNELS $CHANNELICONS $PROGRAMICONS $EXTRADETAILS $EXTRADESCRIPTION -V $DESCSORT > zap2xml.log 2>&1
+  cat $XMLTV_OUTPUT
   cd $CD
   exit 0
 fi
@@ -47,7 +47,7 @@ fi
 while [ $# -gt 0 ]
 do case "$1" in
    -d | --description )
-     printf "tv_grab_zap2xml is a simple wrapper for zap2xml.py\n"
+     printf "tv_grab_schmell2xml is a simple wrapper for zap2xml.py\n"
      ;;
 
    -v | --version )
