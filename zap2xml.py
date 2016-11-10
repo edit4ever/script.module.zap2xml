@@ -1457,13 +1457,60 @@ def addXDetails(program, schedule):
     prog = ""
     plot= ""
     descsort = ""
-    bullet = u" \u2022 "
-    hyphen = u"\u2013 "
-    newLine = u"\n"
-    if "originalAirDate" in program and not new and not live:
-        origdate = enc(convDateLocal(program["originalAirDate"]))
-        finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
-        date = "First aired: " + finaldate
+    bullet = u"\u2022"
+    hyphen = u"\u2013"
+    newLine = u"\u000A"
+
+    def getSortName(opt):
+        return {
+            1: bullet,
+            2: hyphen,
+            3: newLine,
+            4: plot,
+            5: new,
+            6: hd,
+            7: cc,
+            8: season,
+            9: ratings,
+            10: date,
+            11: prog,
+            12: epis,
+            13: episqts,
+            14: cast,
+        }.get(opt, None)
+
+    def cleanSortList(optList):
+        cleanList=[]
+        optLen = len(optList)
+        for opt in optList:
+            thisOption = getSortName(int(opt))
+            if thisOption:
+                cleanList.append(int(opt))
+
+        for item in reversed(cleanList):
+            if cleanList[-1] <= 3:
+                del cleanList[-1]
+
+        #print cleanList
+        return cleanList
+
+    def makeDescsortList(optList):
+        sortOrderList =[]
+        lastOption = 1
+        cleanedList = cleanSortList(optList)
+        for opt in cleanedList:
+            thisOption = getSortName(int(opt))
+            #print "opt: "+str(opt)+" this: "+str(thisOption)+" last: "+str(lastOption)
+            if int(opt) <= 3 and lastOption <= 3:
+                lastOption = int(opt)
+            elif thisOption and lastOption:
+                sortOrderList.append(thisOption)
+                lastOption = int(opt)
+            elif thisOption:
+                lastOption = int(opt)
+
+        return sortOrderList
+
     if "movie_year" in program:
         date = "Released: " + program["movie_year"]
     if "rating" in program:
@@ -1472,6 +1519,10 @@ def addXDetails(program, schedule):
         new = "NEW"
     if "live" in schedule:
         live = "LIVE"
+    if "originalAirDate" in program and not new and not live:
+        origdate = enc(convDateLocal(program["originalAirDate"]))
+        finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
+        date = "First aired: " + finaldate
     if "quality" in schedule:
         hd = schedule['quality']
     if "cc" in schedule:
@@ -1506,41 +1557,12 @@ def addXDetails(program, schedule):
         plot = enc(program['description'])
     if "-V" in options:
         optList = ast.literal_eval(options["-V"])
-
-        def getSortName(opt):
-            return {
-                1: bullet,
-                2: hyphen,
-                3: newLine,
-                4: plot,
-                5: new,
-                6: hd,
-                7: cc,
-                8: season,
-                9: ratings,
-                10: date,
-                11: prog,
-                12: epis,
-                13: episqts,
-                14: cast,
-            }.get(opt, None)
-
-        def makeDescsortList(optList):
-            sortOrderList =[]
-            lastOption = "True"
-            for opt in optList:
-                thisOption = getSortName(int(opt))
-                if thisOption and int(opt) <= 3 and lastOption <= 3:
-                    lastOption = int(opt)
-                elif thisOption and lastOption:
-                    sortOrderList.append(thisOption)
-                    lastOption = int(opt)
-                elif thisOption:
-                    lastOption = int(opt)
-            return sortOrderList
-
         descsort = " ".join(makeDescsortList(optList))
-        return descsort
+    else:
+        descDefault = [4,1,5,1,6,1,7,1,8,1,9,1,10]
+        descsort = " ".join(makeDescsortList(descDefault))
+            
+    return descsort
 
 def printHeaderXTVD(fh, enc):
     global XTVD_startTime, XTVD_endTime
