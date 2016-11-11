@@ -1549,12 +1549,12 @@ def addXDetails(program, schedule):
             cast = cast + castlist
 
     if 'title' in program:
-        prog = enc(program['title'])
+        prog = program['title']
     if 'episode' in program:
-        epis = enc(program['episode'])
-        episqts = '\"' + enc(program['episode']) + '\"'
+        epis = program['episode']
+        episqts = '\"' + program['episode'] + '\"'
     if 'description' in program:
-        plot = enc(program['description'])
+        plot = program['description']
     if "-V" in options:
         optList = ast.literal_eval(options["-V"])
         descsort = " ".join(makeDescsortList(optList))
