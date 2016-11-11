@@ -19,8 +19,8 @@
 
 . /etc/profile
 
-ADDON_HOME="$HOME/.kodi/userdata/addon_data/script.module.schmell2xml"
-ADDON_DIR="$HOME/.kodi/addons/script.module.schmell2xml"
+ADDON_HOME="$HOME/.kodi/userdata/addon_data/script.module.zap2xml"
+ADDON_DIR="$HOME/.kodi/addons/script.module.zap2xml"
 ADDON_SETTINGS="$ADDON_HOME/settings.xml"
 XMLTV_OUTPUT="$ADDON_HOME/xmltv.xml"
 if [ $# -lt 1 ]
@@ -47,11 +47,11 @@ fi
 while [ $# -gt 0 ]
 do case "$1" in
    -d | --description )
-     printf "tv_grab_schmell2xml is a simple wrapper for zap2xml.py\n"
+     printf "edit4ever - tv_grab_zap2xml is a simple wrapper for zap2xml.py\n"
      ;;
 
    -v | --version )
-     printf "0.1\n"
+     printf "0.5.5\n"
      ;;
 
    -c | --capabilities )
