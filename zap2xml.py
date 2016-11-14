@@ -889,7 +889,7 @@ def parseJSOND(fn):
     if "credits" in p:
         credits = p["credits"]
         i = 1
-        if"credits" not in programs[cp]:
+        if "credits" not in programs[cp]:
             programs[cp]["credits"] = {}
         for g in credits:
             programs[cp]["credits"][g] = i
@@ -1235,6 +1235,7 @@ def enc(strng):
         t = re.sub(">","&gt;",t)
         t = re.sub("``","&quot;",t)
         t = re.sub("\'\'","&quot;",t)
+        t = re.sub("&apos;&apos;","&quot;",t)
         t = re.sub("&Aacute;","&#xc4;",t)
         t = re.sub("&aacute;","&#xe1;",t)
         t = re.sub("&Atilde;","&#xc3;",t)
@@ -1422,13 +1423,13 @@ def printProgrammes(fh):
             xe = int(e) - 1
             if int(ss) > 0 or int(e) > 0:
                 fh.write("\t\t<episode-num system=\"onscreen\">" + sf + ef + "</episode-num>\n")
-                fh.write("\t\t<episode-num system=\"xmltv_ns\">" + ("%d" % xs) +  "." + ("%d" % xe) + ".</episode-num>\n")
-
         dd_prog_id = str(p)
         tmp = re.search("^(..\d{8})(\d{4})",dd_prog_id)
         if tmp:
             dd_prog_id = "%s.%s" % (tmp.group(1),tmp.group(2))
             fh.write("\t\t<episode-num system=\"dd_progid\">" + dd_prog_id  + "</episode-num>\n")
+        if xs is not None and xe is not None and xs >= 0 and xe >= 0:
+            fh.write("\t\t<episode-num system=\"xmltv_ns\">" + ("%d" % xs) +  "." + ("%d" % xe) + ".</episode-num>\n")
         if "quality" in  schedule[station][s]:
             fh.write("\t\t<video>\n")
             fh.write("\t\t\t<aspect>16:9</aspect>\n")
@@ -1537,18 +1538,24 @@ def addXDetails(program, schedule):
                 lastOption = int(opt)
 
         return sortOrderList
-
+    startTime = convTime(schedule["time"])
+    if "originalAirDate" in program and not new and not live:
+        origdate = enc(convDateLocal(program["originalAirDate"]))
+        finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
+        date = "First aired: " + finaldate
     if "movie_year" in program:
         myear = "Released: " + program["movie_year"]
     if "rating" in program:
         ratings = enc(program["rating"])
     if "new" in schedule:
         new = "NEW"
+        origdate = startTime
+        finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
+        date = "First aired: " + finaldate
     if "live" in schedule:
         live = "LIVE"
-    if "originalAirDate" in program and not new and not live:
-        origdate = enc(convDateLocal(program["originalAirDate"]))
-        finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
+        origdate = startTime
+        finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
         date = "First aired: " + finaldate
     if "quality" in schedule:
         hd = schedule['quality']
