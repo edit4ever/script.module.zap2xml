@@ -21,6 +21,8 @@ import urllib
 import inspect
 import urllib2
 import datetime
+import ast
+
 """
 import requests
 from requests.auth import HTTPBasicAuth
@@ -887,7 +889,7 @@ def parseJSOND(fn):
     if "credits" in p:
         credits = p["credits"]
         i = 1
-        if "credits" not in programs[cp]:
+        if"credits" not in programs[cp]:
             programs[cp]["credits"] = {}
         for g in credits:
             programs[cp]["credits"][g] = i
@@ -1226,11 +1228,36 @@ def enc(strng):
     global options
     t = strng
     if "-E" not in options:
-        t = re.sub("&[^#]","&amp; ",t)
+        t = re.sub("& ","&amp; ",t)
         t = re.sub("\"","&quot;",t)
         t = re.sub("\'","&apos;",t)
         t = re.sub("<","&lt;",t)
         t = re.sub(">","&gt;",t)
+        t = re.sub("``","&quot;",t)
+        t = re.sub("\'\'","&quot;",t)
+        t = re.sub("&Aacute;","&#xc4;",t)
+        t = re.sub("&aacute;","&#xe1;",t)
+        t = re.sub("&Atilde;","&#xc3;",t)
+        t = re.sub("&atilde;","&#xe3;",t)
+        t = re.sub("&Eacute;","&#xc9;",t)
+        t = re.sub("&eacute;","&#xe9;",t)
+        t = re.sub("&Iacute;","&#xcd;",t)
+        t = re.sub("&iacute;","&#xed;",t)
+        t = re.sub("&Ntilde;","&#xd1;",t)
+        t = re.sub("&ntilde;","&#xf1;",t)
+        t = re.sub("&Oacute;","&#xd3;",t)
+        t = re.sub("&oacute;","&#xf3;",t)
+        t = re.sub("&Uacute;","&#xda;",t)
+        t = re.sub("&uacute;","&#xfa;",t)
+        t = re.sub("&Uuml;","&#xdc;",t)
+        t = re.sub("&uuml;","&#xfc;",t)
+        t = re.sub("&laquo;","&#xab;",t)
+        t = re.sub("&raquo;","&#xbb;",t)
+        t = re.sub("&iquest;","&#xbf;",t)
+        t = re.sub("&iexcl;","&#xa1;",t)
+        t = re.sub("&euro;","&#x80;",t)
+        t = re.sub("&sup3;","&#xb3;",t)
+        t = re.sub("&copy;","&#xa9;",t)
     else:
         if re.search("amp",options["-E"]): t = re.sub("&[^#]","&amp; ",t)
         if re.search("quot",options["-E"]): t = re.sub("\"","&quot;",t)
@@ -1240,7 +1267,6 @@ def enc(strng):
     # if "-e" in options:
     #     t = re.sub("([^\x20-\x7F])",hex2dec_e,t)  # handled by html parser make it unicode
     #     #$t =~ s/([^\x20-\x7F])/'&#' . ord($1) . ';'/gse;
-
 
     return t # unicodeData
 
@@ -1396,15 +1422,13 @@ def printProgrammes(fh):
             xe = int(e) - 1
             if int(ss) > 0 or int(e) > 0:
                 fh.write("\t\t<episode-num system=\"onscreen\">" + sf + ef + "</episode-num>\n")
+                fh.write("\t\t<episode-num system=\"xmltv_ns\">" + ("%d" % xs) +  "." + ("%d" % xe) + ".</episode-num>\n")
 
         dd_prog_id = str(p)
         tmp = re.search("^(..\d{8})(\d{4})",dd_prog_id)
         if tmp:
             dd_prog_id = "%s.%s" % (tmp.group(1),tmp.group(2))
             fh.write("\t\t<episode-num system=\"dd_progid\">" + dd_prog_id  + "</episode-num>\n")
-        if xs is not None and xe is not None and xs >= 0 and xe >= 0:
-            fh.write("\t\t<episode-num system=\"xmltv_ns\">" + ("%d" % xs) +  "." + ("%d" % xe) + ".</episode-num>\n")
-
         if "quality" in  schedule[station][s]:
             fh.write("\t\t<video>\n")
             fh.write("\t\t\t<aspect>16:9</aspect>\n")
@@ -1444,7 +1468,7 @@ def printProgrammes(fh):
 
 
 def addXDetails(program, schedule):
-    #log.pout(program)
+
     ratings = ""
     date = ""
     myear = ""
@@ -1461,11 +1485,59 @@ def addXDetails(program, schedule):
     descsort = ""
     bullet = u"\u2022"
     hyphen = u"\u2013"
-    lbreak = "\n"
-    if "originalAirDate" in program and not new and not live:
-        origdate = enc(convDateLocal(program["originalAirDate"]))
-        finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
-        date = "First aired: " + finaldate
+    newLine = u"\u000D"
+
+    def getSortName(opt):
+        return {
+            1: bullet,
+            2: newLine,
+            3: hyphen,
+            4: plot,
+            5: new,
+            6: hd,
+            7: cc,
+            8: season,
+            9: ratings,
+            10: date,
+            11: prog,
+            12: epis,
+            13: episqts,
+            14: cast,
+            15: myear,
+        }.get(opt, None)
+
+    def cleanSortList(optList):
+        cleanList=[]
+        optLen = len(optList)
+        for opt in optList:
+            thisOption = getSortName(int(opt))
+            if thisOption:
+                cleanList.append(int(opt))
+
+        for item in reversed(cleanList):
+            if cleanList[-1] <= 3:
+                del cleanList[-1]
+
+        #print cleanList
+        return cleanList
+
+    def makeDescsortList(optList):
+        sortOrderList =[]
+        lastOption = 1
+        cleanedList = cleanSortList(optList)
+        for opt in cleanedList:
+            thisOption = getSortName(int(opt))
+            #print "opt: "+str(opt)+" this: "+str(thisOption)+" last: "+str(lastOption)
+            if int(opt) <= 3 and lastOption <= 3:
+                lastOption = int(opt)
+            elif thisOption and lastOption:
+                sortOrderList.append(thisOption)
+                lastOption = int(opt)
+            elif thisOption:
+                lastOption = int(opt)
+
+        return sortOrderList
+
     if "movie_year" in program:
         myear = "Released: " + program["movie_year"]
     if "rating" in program:
@@ -1474,65 +1546,50 @@ def addXDetails(program, schedule):
         new = "NEW"
     if "live" in schedule:
         live = "LIVE"
+    if "originalAirDate" in program and not new and not live:
+        origdate = enc(convDateLocal(program["originalAirDate"]))
+        finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
+        date = "First aired: " + finaldate
     if "quality" in schedule:
         hd = schedule['quality']
     if "cc" in schedule:
         cc = schedule['cc']
     if "seasonNum" in program and "episodeNum" in program:
         ss = program["seasonNum"]
-        sf =  "Season %0*d " % (max(2, len(str(ss))), int(ss))
+        sf = "Season %0*d" % (max(2, len(str(ss))), int(ss))
         e = program["episodeNum"]
         ef = "Episode %0*d" % (max(2, len(str(e))), int(e))
-        season = sf + u"\u2010 " + ef
-#    if "credits" in programs[p]:
-#        sortThing1 = str(p)
-#        sortThing2 = "credits"
-#        cast = "Cast: "
-#        castlist = ""
-#        prev = None
-#        for g in sorted(programs[p]["credits"], cmp=sortThings):
-#            if prev is None:
-#                castlist = enc(g)
-#                prev = g
-#            else:
-#                castlist = castlist + ", " + enc(g)
-#            cast = cast + castlist
+        season = sf + " - " + ef
+
+    if "credits" in program:
+        #sortThing1 = str(program)
+        #sortThing2 = "credits"
+        cast = "Cast: "
+        castlist = ""
+        prev = None
+        for g in program["credits"]:
+            if prev is None:
+                castlist = enc(g)
+                prev = g
+            else:
+                castlist = castlist + ", " + enc(g)
+            cast = cast + castlist
+
     if 'title' in program:
-        prog = program['title']
+        prog = enc(program['title'])
     if 'episode' in program:
-        epis = program['episode']
-        episqts = "&quot;" + program['episode'] + "&quot;"
+        epis = enc(program['episode'])
+        episqts = '\"' + enc(program['episode']) + '\"'
     if 'description' in program:
-        plot = program['description']
+        plot = enc(program['description'])
     if "-V" in options:
-        descsort = options["-V"]
-        descsort = re.sub("z15y", lbreak, descsort)
-        descsort = re.sub("z14y", myear, descsort)
-        descsort = re.sub("z13y", cast + " ", descsort)
-        descsort = re.sub("z12y", episqts + " ", descsort)
-        descsort = re.sub("z11y", epis + " ", descsort)
-        descsort = re.sub("z10y", prog + " ", descsort)
-        descsort = re.sub("z9y", date + " ", descsort)
-        descsort = re.sub("z8y", ratings + " ", descsort)
-        descsort = re.sub("z7y", season + " ", descsort)
-        descsort = re.sub("z6y", cc + " ", descsort)
-        descsort = re.sub("z5y", hd + " ", descsort)
-        descsort = re.sub("z4y", new + live + " ", descsort)
-        descsort = re.sub("z3y", plot + " ", descsort)
-        descsort = re.sub("z2y", hyphen + " ", descsort)
-        descsort = re.sub("z1y", bullet + " ", descsort)
-        descsort = re.sub("z0y", "", descsort)
-        descsort = re.sub(hyphen + " *" + bullet, bullet, descsort)         #removes back to back hyphen/bullet when other details are blank
-        descsort = re.sub(bullet + " *" + hyphen, hyphen, descsort)        #removes back to back bullet/hyphen when other details are blank
-        descsort = re.sub(bullet + " *" + bullet, bullet, descsort)          #removes duplicate bullets when other details are blank
-        descsort = re.sub(hyphen + " *" + hyphen, hyphen, descsort)          #removes duplicate hyphens when other details are blank
-        descsort = re.sub(bullet + " *" + bullet, bullet, descsort)          #removes re.sub leftover duplicate bullets when other details are blank
-        descsort = re.sub(hyphen + " *" + hyphen, hyphen, descsort)          #removes re.sub leftover duplicate hyphens when other details are blank
-        descsort = re.sub(" +", " ", descsort)                             #removes duplicate spaces when other details are blank
-        descsort = re.sub(r'^[^a-zA-Z0-9_&]*', '', descsort)                # removes a leading bullet or hyphen which is leftover when other fields are empty
-    htmlparser = HTMLParser()
-    result = htmlparser.unescape(descsort)
-    return result
+        optList = ast.literal_eval(options["-V"])
+        descsort = " ".join(makeDescsortList(optList))
+    else:
+        descDefault = [4,1,5,1,6,1,7,1,8,1,9,1,10]
+        descsort = " ".join(makeDescsortList(descDefault))
+
+    return descsort
 
 def printHeaderXTVD(fh, enc):
     global XTVD_startTime, XTVD_endTime
