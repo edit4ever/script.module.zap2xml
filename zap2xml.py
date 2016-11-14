@@ -1,3 +1,4 @@
+# coding=utf-8
 # zap2xml - zap2it tvschedule scraper -
 
 import time
@@ -1232,6 +1233,7 @@ def enc(strng):
         t = re.sub("\'","&apos;",t)
         t = re.sub("<","&lt;",t)
         t = re.sub(">","&gt;",t)
+        t = re.sub(u"á","&#225;",t)
     else:
         if re.search("amp",options["-E"]): t = re.sub("&[^#]","&amp; ",t)
         if re.search("quot",options["-E"]): t = re.sub("\"","&quot;",t)
