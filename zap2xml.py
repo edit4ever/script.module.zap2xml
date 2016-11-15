@@ -1486,7 +1486,7 @@ def addXDetails(program, schedule):
     descsort = ""
     bullet = u"\u2022"
     hyphen = u"\u2013"
-    newLine = u"\u000D"
+    newLine = "\n"
 
     def getSortName(opt):
         return {
