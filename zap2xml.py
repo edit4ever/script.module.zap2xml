@@ -1228,37 +1228,14 @@ def enc(strng):
     global options
     t = strng
     if "-E" not in options:
-        t = re.sub("& ","&amp; ",t)
+        t = re.sub("&[^#]","&amp; ",t)
+        #t = re.sub("& ","&amp; ",t) #not sure about this one
         t = re.sub("\"","&quot;",t)
         t = re.sub("\'","&apos;",t)
         t = re.sub("<","&lt;",t)
         t = re.sub(">","&gt;",t)
         t = re.sub("``","&quot;",t)
         t = re.sub("\'\'","&quot;",t)
-        t = re.sub("&apos;&apos;","&quot;",t)
-        t = re.sub("&Aacute;","&#xc4;",t)
-        t = re.sub("&aacute;","&#xe1;",t)
-        t = re.sub("&Atilde;","&#xc3;",t)
-        t = re.sub("&atilde;","&#xe3;",t)
-        t = re.sub("&Eacute;","&#xc9;",t)
-        t = re.sub("&eacute;","&#xe9;",t)
-        t = re.sub("&Iacute;","&#xcd;",t)
-        t = re.sub("&iacute;","&#xed;",t)
-        t = re.sub("&Ntilde;","&#xd1;",t)
-        t = re.sub("&ntilde;","&#xf1;",t)
-        t = re.sub("&Oacute;","&#xd3;",t)
-        t = re.sub("&oacute;","&#xf3;",t)
-        t = re.sub("&Uacute;","&#xda;",t)
-        t = re.sub("&uacute;","&#xfa;",t)
-        t = re.sub("&Uuml;","&#xdc;",t)
-        t = re.sub("&uuml;","&#xfc;",t)
-        t = re.sub("&laquo;","&#xab;",t)
-        t = re.sub("&raquo;","&#xbb;",t)
-        t = re.sub("&iquest;","&#xbf;",t)
-        t = re.sub("&iexcl;","&#xa1;",t)
-        t = re.sub("&euro;","&#x80;",t)
-        t = re.sub("&sup3;","&#xb3;",t)
-        t = re.sub("&copy;","&#xa9;",t)
     else:
         if re.search("amp",options["-E"]): t = re.sub("&[^#]","&amp; ",t)
         if re.search("quot",options["-E"]): t = re.sub("\"","&quot;",t)
@@ -1583,20 +1560,20 @@ def addXDetails(program, schedule):
             cast = cast + castlist
 
     if 'title' in program:
-        prog = enc(program['title'])
+        prog = program['title']
     if 'episode' in program:
-        epis = enc(program['episode'])
-        episqts = '\"' + enc(program['episode']) + '\"'
+        epis = program['episode']
+        episqts = '\"' + program['episode'] + '\"'
     if 'description' in program:
-        plot = enc(program['description'])
+        plot = program['description']
     if "-V" in options:
         optList = ast.literal_eval(options["-V"])
         descsort = " ".join(makeDescsortList(optList))
     else:
         descDefault = [4,1,5,1,6,1,7,1,8,1,9,1,10]
         descsort = " ".join(makeDescsortList(descDefault))
-
-    return descsort
+    encDescSort = enc(descsort)
+    return encDescSort
 
 def printHeaderXTVD(fh, enc):
     global XTVD_startTime, XTVD_endTime
