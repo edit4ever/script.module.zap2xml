@@ -1459,9 +1459,9 @@ def addXDetails(program, schedule):
     prog = ""
     plot= ""
     descsort = ""
-    bullet = u"\u2022"
-    hyphen = u"\u2013"
-    newLine = u"\u000A"
+    bullet = u" \u2022 "
+    hyphen = u" \u2013 "
+    newLine = "\n"
 
     def getSortName(opt):
         return {
@@ -1559,10 +1559,10 @@ def addXDetails(program, schedule):
         plot = program['description']
     if "-V" in options:
         optList = ast.literal_eval(options["-V"])
-        descsort = " ".join(makeDescsortList(optList))
+        descsort = "".join(makeDescsortList(optList))
     else:
         descDefault = [4,1,5,1,6,1,7,1,8,1,9,1,10]
-        descsort = " ".join(makeDescsortList(descDefault))
+        descsort = "".join(makeDescsortList(descDefault))
             
     return descsort
 
