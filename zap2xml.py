@@ -1535,21 +1535,9 @@ def addXDetails(program, schedule):
         e = program["episodeNum"]
         ef = "Episode %0*d" % (max(2, len(str(e))), int(e))
         season = sf + " " + ef
-
     if "credits" in program:
-        #sortThing1 = str(program)
-        #sortThing2 = "credits"
-        cast = "Cast: "
-        castlist = ""
-        prev = None
-        for g in program["credits"]:
-            if prev is None:
-                castlist = enc(g)
-                prev = g
-            else:
-                castlist = castlist + ", " + enc(g)
-            cast = cast + castlist
-
+        for item in program['credits']:
+            cast = "Cast: "+", "+item  
     if 'title' in program:
         prog = program['title']
     if 'episode' in program:
