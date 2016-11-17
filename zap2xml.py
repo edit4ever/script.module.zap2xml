@@ -1,11 +1,9 @@
-# coding=utf-8
 # zap2xml - zap2it tvschedule scraper -
 
 import time
 from HTMLParser import HTMLParser
 from htmlentitydefs import name2codepoint
 import codecs
-
 import platform
 import sys
 import os
@@ -38,7 +36,6 @@ libxml2
 lxml
 """
 
-
 class Zap2xmllog():
     debug = False
     quiet = False
@@ -54,7 +51,6 @@ class Zap2xmllog():
 
     def setQuiet(self,x=False):
         self.quiet = x
-
 
     def pout (self, pstr, log_type='none',printOut = True, func = False):
         if func:
@@ -93,18 +89,6 @@ if re.search('openelec', platform.uname()[1], re.IGNORECASE) or os.path.exists(k
     else: log.pout("Mechanize addon not installed error",'error')
 import mechanize
 
-#log.pout("Test", 'debug', func=True)
-# try:
-#  homeDir = os.environ['HOME']
-# except Exception as e:
-#     homeDir = None
-# try:
-#  homeDir = os.environ['USERPROFILE']
-# except Exception as e:
-#  homeDir = None
-# if homeDir is None : homeDir = homeDir='.'
-# confFile = homeDir + '/.zap2xmlrc'
-
 confFile = os.path.join(os.path.dirname(os.path.realpath(__file__)), ".zap2xmlrc")
 
 # Defaults
@@ -118,23 +102,17 @@ cacheDir = 'cache'
 lang = u'en'
 userEmail = None
 password = None
-
 proxy = None
 postalcode = None
 lineupId = None
-
 sleeptime = 0
 shiftMinutes = 0
-
 outputXTVD = None
 includeXMLTV = None
 lineuptype = None
 lineupname = None
 lineuplocation = None
-
-
 sTBA = "\\bTBA\\b|To Be Announced"
-
 urlRoot = 'http://tvschedule.zap2it.com/tvlistings/'
 tvgurlRoot = 'http://mobilelistings.tvguide.com/'
 tvgMapiRoot = 'http://mapi.tvguide.com/'
@@ -616,7 +594,6 @@ def login():
         log.pout("Connecting with lineupId \"" + zlineupId + "\" (" +  str(time.localtime(time.time())) +  ")\n",'info')
 
 
-
 # s/\s+$// match white space at end of line one or more times and replace with nothing
 # shift function args
 def rtrim (shift):
@@ -904,7 +881,6 @@ def parseJSOND(fn):
         programs[cp]["starRating"] = str(tsr)
 
 
-
 def parseTVGFavs(data):
     global tvgfavs, zlineupId
     t = json.loads(data)
@@ -1179,7 +1155,6 @@ def timezone(t) :
 #sub min ($$) { $_[$_[0] > $_[1]] } #todo
 
 
-
 def incXML (st, en, fh):
     xf = open(includeXMLTV)
     start_pat = False
@@ -1445,7 +1420,6 @@ def printProgrammes(fh):
 
 
 def addXDetails(program, schedule):
-
     ratings = ""
     date= ""
     new = ""
@@ -1493,7 +1467,6 @@ def addXDetails(program, schedule):
             if cleanList[-1] <= 3:
                 del cleanList[-1]
 
-        #print cleanList
         return cleanList
 
     def makeDescsortList(optList):
@@ -1502,7 +1475,6 @@ def addXDetails(program, schedule):
         cleanedList = cleanSortList(optList)
         for opt in cleanedList:
             thisOption = getSortName(int(opt))
-            #print "opt: "+str(opt)+" this: "+str(thisOption)+" last: "+str(lastOption)
             if int(opt) <= 3 and lastOption <= 3:
                 lastOption = int(opt)
             elif thisOption and lastOption:
@@ -1823,7 +1795,6 @@ def option_parse():
     if "-S" in options: sleeptime = float(options["-S"])
     if "-m" in options: shiftMinutes = int(options["-m"])
     if "-V" in options: descsort = options["-V"]
-
 
 
 def printHelp ():
