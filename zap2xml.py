@@ -333,7 +333,7 @@ def on_td (self, tag, attrs):
                 if cp != -1 and "-D" in options:
                     fn = os.path.join(cacheDir,cp + ".js.gz")
                     if not os.path.isfile(fn):
-                        data = getURL(urlRoot + "gridDetailService?pgmId=" + cp)
+                        data = unicode(getURL(urlRoot + "gridDetailService?pgmId=" + cp), 'utf-8')
                         wbf(fn, data)
                         log.pout("[D] Parsing: " + cp,'info')
                     parseJSOND(fn)
@@ -1228,7 +1228,7 @@ def enc(strng):
     global options
     t = strng
     if "-E" not in options:
-        t = re.sub("& ","&amp; ",t)
+        t = re.sub("&","&amp;",t)
         t = re.sub("\"","&quot;",t)
         t = re.sub("\'","&apos;",t)
         t = re.sub("<","&lt;",t)
@@ -1236,29 +1236,7 @@ def enc(strng):
         t = re.sub("``","&quot;",t)
         t = re.sub("\'\'","&quot;",t)
         t = re.sub("&apos;&apos;","&quot;",t)
-        t = re.sub("&Aacute;","&#xc4;",t)
-        t = re.sub("&aacute;","&#xe1;",t)
-        t = re.sub("&Atilde;","&#xc3;",t)
-        t = re.sub("&atilde;","&#xe3;",t)
-        t = re.sub("&Eacute;","&#xc9;",t)
-        t = re.sub("&eacute;","&#xe9;",t)
-        t = re.sub("&Iacute;","&#xcd;",t)
-        t = re.sub("&iacute;","&#xed;",t)
-        t = re.sub("&Ntilde;","&#xd1;",t)
-        t = re.sub("&ntilde;","&#xf1;",t)
-        t = re.sub("&Oacute;","&#xd3;",t)
-        t = re.sub("&oacute;","&#xf3;",t)
-        t = re.sub("&Uacute;","&#xda;",t)
-        t = re.sub("&uacute;","&#xfa;",t)
-        t = re.sub("&Uuml;","&#xdc;",t)
-        t = re.sub("&uuml;","&#xfc;",t)
-        t = re.sub("&laquo;","&#xab;",t)
-        t = re.sub("&raquo;","&#xbb;",t)
-        t = re.sub("&iquest;","&#xbf;",t)
-        t = re.sub("&iexcl;","&#xa1;",t)
-        t = re.sub("&euro;","&#x80;",t)
-        t = re.sub("&sup3;","&#xb3;",t)
-        t = re.sub("&copy;","&#xa9;",t)
+
     else:
         if re.search("amp",options["-E"]): t = re.sub("&[^#]","&amp; ",t)
         if re.search("quot",options["-E"]): t = re.sub("\"","&quot;",t)
