@@ -23,6 +23,9 @@ import urllib2
 import datetime
 import ast
 
+sys.path.append('/storage/.kodi/addons/script.module.beautifulsoup/lib')
+from BeautifulSoup import BeautifulStoneSoup
+
 """
 import requests
 from requests.auth import HTTPBasicAuth
@@ -1566,7 +1569,9 @@ def addXDetails(program, schedule):
         epis = enc(program['episode'])
         episqts = '\"' + enc(program['episode']) + '\"'
     if 'description' in program:
-        plot = enc(program['description'])
+        plot = program['description']
+        plot = unicode(BeautifulStoneSoup(plot, convertEntities=BeautifulStoneSoup.ALL_ENTITIES))
+        plot = enc(plot)
     if "-V" in options:
         optList = ast.literal_eval(options["-V"])
         descsort = " ".join(makeDescsortList(optList))
