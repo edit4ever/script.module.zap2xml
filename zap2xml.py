@@ -1536,7 +1536,7 @@ def addXDetails(program, schedule):
         finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
         date = "First aired: " + finaldate + space
     if "live" in schedule:
-        live = "LIVE "
+        new = "LIVE "
         origdate = startTime
         finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
         date = "First aired: " + finaldate + space
