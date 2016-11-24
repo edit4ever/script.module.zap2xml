@@ -336,7 +336,7 @@ def on_td (self, tag, attrs):
                 if cp != -1 and "-D" in options:
                     fn = os.path.join(cacheDir,cp + ".js.gz")
                     if not os.path.isfile(fn):
-                        data = unicode(getURL(urlRoot + "gridDetailService?pgmId=" + cp), 'utf-8')
+                        data = getURL(urlRoot + "gridDetailService?pgmId=" + cp)
                         wbf(fn, data)
                         log.pout("[D] Parsing: " + cp,'info')
                     parseJSOND(fn)
