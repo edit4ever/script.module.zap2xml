@@ -1231,17 +1231,18 @@ def enc(strng):
     global options
     t = strng
     if "-E" not in options:
+        t = re.sub("&#160;\'","\'",t)           #needed to fix screener guide listing error - &#039;
         t = re.sub("&","&amp;",t)
         t = re.sub("\"","&quot;",t)
         t = re.sub("\'","&apos;",t)
         t = re.sub("<","&lt;",t)
         t = re.sub(">","&gt;",t)
-        t = re.sub("``","&quot;",t)
-        t = re.sub("\'\'","&quot;",t)
-        t = re.sub("&apos;&apos;","&quot;",t)
+        t = re.sub("``","&quot;",t)             #needed to fix screener guide listing errors
+        t = re.sub("\'\'","&quot;",t)           #needed to fix screener guide listing errors
+        t = re.sub("&apos;&apos;","&quot;",t)   #needed to fix screener guide listing errors
 
     else:
-        if re.search("amp",options["-E"]): t = re.sub("&[^#]","&amp; ",t)
+        if re.search("amp",options["-E"]): t = re.sub("&","&amp;",t)
         if re.search("quot",options["-E"]): t = re.sub("\"","&quot;",t)
         if re.search("apos",options["-E"]): t = re.sub("\'","&apos;",t)
         if re.search("lt",options["-E"]): t = re.sub("<","&lt;",t)
@@ -1544,9 +1545,9 @@ def addXDetails(program, schedule):
         cc = schedule['cc']
     if "seasonNum" in program and "episodeNum" in program:
         ss = program["seasonNum"]
-        sf = "Season %0*d" % (max(2, len(str(ss))), int(ss))
+        sf = "Season " + str(int(ss))
         e = program["episodeNum"]
-        ef = "Episode %0*d" % (max(2, len(str(e))), int(e))
+        ef = "Episode " + str(int(e))
         season = sf + " - " + ef
 
     if "credits" in program:
@@ -1561,7 +1562,7 @@ def addXDetails(program, schedule):
                 prev = g
             else:
                 castlist = castlist + ", " + enc(g)
-            cast = cast + castlist
+        cast = cast + castlist
 
     if 'title' in program:
         prog = enc(program['title'])
