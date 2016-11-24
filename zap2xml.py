@@ -1466,9 +1466,10 @@ def addXDetails(program, schedule):
     prog = ""
     plot= ""
     descsort = ""
-    bullet = u"\u2022"
-    hyphen = u"\u2013"
+    bullet = u"\u2022 "
+    hyphen = u"\u2013 "
     newLine = "\n"
+    space = " "
 
     def getSortName(opt):
         return {
@@ -1524,31 +1525,31 @@ def addXDetails(program, schedule):
     if "originalAirDate" in program and not new and not live:
         origdate = enc(convDateLocal(program["originalAirDate"]))
         finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
-        date = "First aired: " + finaldate
+        date = "First aired: " + finaldate + space
     if "movie_year" in program:
-        myear = "Released: " + program["movie_year"]
+        myear = "Released: " + program["movie_year"] + space
     if "rating" in program:
-        ratings = enc(program["rating"])
+        ratings = enc(program["rating"]) + space
     if "new" in schedule:
-        new = "NEW"
+        new = "NEW "
         origdate = startTime
         finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
-        date = "First aired: " + finaldate
+        date = "First aired: " + finaldate + space
     if "live" in schedule:
-        live = "LIVE"
+        live = "LIVE "
         origdate = startTime
         finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
-        date = "First aired: " + finaldate
+        date = "First aired: " + finaldate + space
     if "quality" in schedule:
-        hd = schedule['quality']
+        hd = schedule['quality'] + space
     if "cc" in schedule:
-        cc = schedule['cc']
+        cc = schedule['cc'] + space
     if "seasonNum" in program and "episodeNum" in program:
         ss = program["seasonNum"]
         sf = "Season " + str(int(ss))
         e = program["episodeNum"]
         ef = "Episode " + str(int(e))
-        season = sf + " - " + ef
+        season = sf + " - " + ef + space
 
     if "credits" in program:
         #sortThing1 = str(program)
@@ -1562,23 +1563,23 @@ def addXDetails(program, schedule):
                 prev = g
             else:
                 castlist = castlist + ", " + enc(g)
-        cast = cast + castlist
+        cast = cast + castlist + space
 
     if 'title' in program:
-        prog = enc(program['title'])
+        prog = enc(program['title']) + space
     if 'episode' in program:
-        epis = enc(program['episode'])
-        episqts = '\"' + enc(program['episode']) + '\"'
+        epis = enc(program['episode']) + space
+        episqts = '\"' + enc(program['episode']) + '\"' + space
     if 'description' in program:
         plot = program['description']
         plot = unicode(BeautifulStoneSoup(plot, convertEntities=BeautifulStoneSoup.ALL_ENTITIES))
-        plot = enc(plot)
+        plot = enc(plot) + space
     if "-V" in options:
         optList = ast.literal_eval(options["-V"])
-        descsort = " ".join(makeDescsortList(optList))
+        descsort = "".join(makeDescsortList(optList))
     else:
         descDefault = [4,1,5,1,6,1,7,1,8,1,9,1,10]
-        descsort = " ".join(makeDescsortList(descDefault))
+        descsort = "".join(makeDescsortList(descDefault))
 
     return descsort
 
