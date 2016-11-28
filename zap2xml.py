@@ -1360,7 +1360,9 @@ def printProgrammes(fh):
 
         if "description" in programs[p] and programs[p]["description"] is not None:
             xdets = ""
-            tmp = enc(programs[p]["description"])
+            tmp = programs[p]["description"]
+            tmp = unicode(BeautifulStoneSoup(tmp, convertEntities=BeautifulStoneSoup.ALL_ENTITIES))
+            tmp = enc(tmp)
             if "-X" in options:
                 xdets = addXDetails(programs[p], schedule[station][s])
                 fh.write("\t\t<desc lang=\"" + lang + "\">" + xdets + "</desc>\n")
