@@ -23,9 +23,6 @@ import urllib2
 import datetime
 import ast
 
-sys.path.append('/storage/.kodi/addons/script.module.beautifulsoup/lib')
-from BeautifulSoup import BeautifulStoneSoup
-
 """
 import requests
 from requests.auth import HTTPBasicAuth
@@ -87,14 +84,22 @@ log = Zap2xmllog()
 log.setDebug()
 operSys = platform.uname()[0]
 log.pout(repr(platform.uname()),'info',printOut = False)
+
+#set paths to import third party libs
 kodiPath = '/storage/.kodi/addons/'
 mechLib = 'script.module.mechanize/lib'
+soupLib = 'script.module.beautifulsoup/lib'
 if re.search('openelec', platform.uname()[1], re.IGNORECASE) or os.path.exists(kodiPath):
     log.pout("Found openelec node name or " + kodiPath,'info',printOut = False)
     if os.path.exists(kodiPath + mechLib):
         sys.path.append(kodiPath + mechLib)
     else: log.pout("Mechanize addon not installed error",'error')
+    if os.path.exists(kodiPath + soupLib):
+    	sys.path.append(kodiPath + soupLib)
+    else: log.pout("BeautifulSoup addon not installed error",'error')
+
 import mechanize
+from BeautifulSoup import BeautifulStoneSoup
 
 #log.pout("Test", 'debug', func=True)
 # try:
@@ -1231,6 +1236,7 @@ def enc(strng):
     global options
     t = strng
     if "-E" not in options:
+        t = unicode(BeautifulStoneSoup(t, convertEntities=BeautifulStoneSoup.ALL_ENTITIES))
         t = re.sub("&#160;\'","\'",t)           #needed to fix screener guide listing error - &#039;
         t = re.sub("&","&amp;",t)
         t = re.sub("\"","&quot;",t)
@@ -1571,9 +1577,8 @@ def addXDetails(program, schedule):
         epis = enc(program['episode']) + space
         episqts = '\"' + enc(program['episode']) + '\"' + space
     if 'description' in program:
-        plot = program['description']
-        plot = unicode(BeautifulStoneSoup(plot, convertEntities=BeautifulStoneSoup.ALL_ENTITIES))
-        plot = enc(plot) + space
+        plot = enc(program['description'])
+
     if "-V" in options:
         optList = ast.literal_eval(options["-V"])
         descsort = "".join(makeDescsortList(optList))
