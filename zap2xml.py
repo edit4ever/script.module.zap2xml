@@ -1457,25 +1457,25 @@ def printProgrammes(fh):
 
 
 def addXDetails(program, schedule):
-
-    ratings = ""
-    date = ""
-    myear = ""
+    bullet = u" \u2022 "
+    hyphen = u" \u2013 "
+    newLine = "\n"
+    plot= ""
     new = ""
-    live = ""
     hd = ""
     cc = ""
-    cast = ""
     season = ""
+    ratings = ""
+    date = ""
+    prog = ""
     epis = ""
     episqts = ""
-    prog = ""
-    plot= ""
+    cast = ""
+    myear = ""
+    live = ""
     descsort = ""
-    bullet = u"\u2022 "
-    hyphen = u"\u2013 "
-    newLine = "\n"
-    space = " "
+    showType = ""
+    genres = ""
 
     def getSortName(opt):
         return {
@@ -1494,6 +1494,8 @@ def addXDetails(program, schedule):
             13: episqts,
             14: cast,
             15: myear,
+            16: showType,
+            17: genres,
         }.get(opt, None)
 
     def cleanSortList(optList):
@@ -1508,7 +1510,6 @@ def addXDetails(program, schedule):
             if cleanList[-1] <= 3:
                 del cleanList[-1]
 
-        #print cleanList
         return cleanList
 
     def makeDescsortList(optList):
@@ -1517,7 +1518,6 @@ def addXDetails(program, schedule):
         cleanedList = cleanSortList(optList)
         for opt in cleanedList:
             thisOption = getSortName(int(opt))
-            #print "opt: "+str(opt)+" this: "+str(thisOption)+" last: "+str(lastOption)
             if int(opt) <= 3 and lastOption <= 3:
                 lastOption = int(opt)
             elif thisOption and lastOption:
@@ -1529,33 +1529,27 @@ def addXDetails(program, schedule):
         return sortOrderList
     startTime = convTime(schedule["time"])
     if "originalAirDate" in program and not new and not live:
-        origdate = enc(convDateLocal(program["originalAirDate"]))
+        origdate = convDateLocal(program["originalAirDate"])
         finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
-        date = "First aired: " + finaldate + space
+        date = "First aired: " + finaldate
     if "movie_year" in program:
-        myear = "Released: " + program["movie_year"] + space
+        myear = "Released: " + program["movie_year"]
     if "rating" in program:
-        ratings = enc(program["rating"]) + space
+        ratings = enc(program["rating"])
     if "new" in schedule:
-        new = "NEW "
-        origdate = startTime
-        finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
-        date = "First aired: " + finaldate + space
+        new = "NEW"
     if "live" in schedule:
-        new = "LIVE "
-        origdate = startTime
-        finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
-        date = "First aired: " + finaldate + space
+        live = "LIVE"
     if "quality" in schedule:
-        hd = schedule['quality'] + space
+        hd = schedule['quality']
     if "cc" in schedule:
-        cc = schedule['cc'] + space
+        cc = schedule['cc']
     if "seasonNum" in program and "episodeNum" in program:
         ss = program["seasonNum"]
-        sf = "Season " + str(int(ss))
+        sf = "Season %0*d" % (max(2, len(str(ss))), int(ss))
         e = program["episodeNum"]
-        ef = "Episode " + str(int(e))
-        season = sf + " - " + ef + space
+        ef = "Episode %0*d" % (max(2, len(str(e))), int(e))
+        season = sf + " - " + ef
 
     if "credits" in program:
         #sortThing1 = str(program)
@@ -1566,19 +1560,34 @@ def addXDetails(program, schedule):
         for g in program["credits"]:
             if prev is None:
                 castlist = enc(g)
-                prev = g
+                prev = 1
             else:
                 castlist = castlist + ", " + enc(g)
-        cast = cast + castlist + space
+            cast = cast + castlist
 
     if 'title' in program:
-        prog = enc(program['title']) + space
+        prog = enc(program['title'])
     if 'episode' in program:
-        epis = enc(program['episode']) + space
-        episqts = '\"' + enc(program['episode']) + '\"' + space
+        epis = enc(program['episode'])
+        episqts = '\"' + enc(program['episode']) + '\"'
     if 'description' in program:
         plot = enc(program['description'])
-
+        
+    if 'genres' in program:
+        prev = None
+        for g in program['genres']:
+            g = g[0].upper() + g[1:]
+            if 'Series' not in g:
+                if prev is None:
+                    genres = g
+                    prev = 1
+                else:
+                    genres = genres + ", " + g
+                    
+        #log.pout(str(program['genres']),'debug')
+    if program['type']:
+        showType = program['type']
+        #log.pout(str(program['type']),'debug')
     if "-V" in options:
         optList = ast.literal_eval(options["-V"])
         descsort = "".join(makeDescsortList(optList))
