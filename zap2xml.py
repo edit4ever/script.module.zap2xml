@@ -351,7 +351,7 @@ def on_td (self, tag, attrs):
                         data = getURL(urlRoot + "gridDetailService?rtype=pgmimg&pgmId=" + cp)
                         if data: #sometimes we fail to get the url try to keep going
                             wbf(fn, data)
-                            log.pout("[I] Parsing: " + cp,'info')
+                            log.pout("[I] Parsing: " + str(cp),'info')
                     parseJSONI(fn)
         elif re.search('zc-st',my_dict[cls]):
             inStationTd = 1
@@ -1360,9 +1360,7 @@ def printProgrammes(fh):
 
         if "description" in programs[p] and programs[p]["description"] is not None:
             xdets = ""
-            tmp = programs[p]["description"]
-            tmp = unicode(BeautifulStoneSoup(tmp, convertEntities=BeautifulStoneSoup.ALL_ENTITIES))
-            tmp = enc(tmp)
+            tmp = enc(programs[p]["description"])
             if "-X" in options:
                 xdets = addXDetails(programs[p], schedule[station][s])
                 fh.write("\t\t<desc lang=\"" + lang + "\">" + xdets + "</desc>\n")
@@ -1478,24 +1476,34 @@ def addXDetails(program, schedule):
     hyphen = u"\u2013 "
     newLine = "\n"
     space = " "
+    colon = u"\u003A "
+    vbar = u"\u007C "
+    slash = u"\u2215 "
+    comma = u"\u002C "
 
     def getSortName(opt):
         return {
             1: bullet,
             2: newLine,
             3: hyphen,
-            4: plot,
-            5: new,
-            6: hd,
-            7: cc,
-            8: season,
-            9: ratings,
-            10: date,
-            11: prog,
-            12: epis,
-            13: episqts,
-            14: cast,
-            15: myear,
+            4: space,
+            5: colon,
+            6: vbar,
+            7: slash,
+            8: comma,
+            9: plot,
+            10: new,
+            11: hd,
+            12: cc,
+            13: season,
+            14: ratings,
+            15: date,
+            16: prog,
+            17: epis,
+            18: episqts,
+            19: cast,
+            20: myear,
+
         }.get(opt, None)
 
     def cleanSortList(optList):
@@ -1507,7 +1515,7 @@ def addXDetails(program, schedule):
                 cleanList.append(int(opt))
 
         for item in reversed(cleanList):
-            if cleanList[-1] <= 3:
+            if cleanList[-1] <= 8:
                 del cleanList[-1]
 
         #print cleanList
@@ -1520,7 +1528,7 @@ def addXDetails(program, schedule):
         for opt in cleanedList:
             thisOption = getSortName(int(opt))
             #print "opt: "+str(opt)+" this: "+str(thisOption)+" last: "+str(lastOption)
-            if int(opt) <= 3 and lastOption <= 3:
+            if int(opt) <= 8 and lastOption <= 8:
                 lastOption = int(opt)
             elif thisOption and lastOption:
                 sortOrderList.append(thisOption)

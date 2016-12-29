@@ -57,4 +57,9 @@
 	<string id="32313">Cast</string>
 	<string id="32314">Movie Release Year</string>
 	<string id="32320">LINE BREAK</string>
+	<string id="32321">SPACE</string>
+	<string id="32322">COLON</string>
+	<string id="32323">VERTICAL BAR</string>
+	<string id="32324">SLASH</string>
+	<string id="32325">COMMA</string>
 </strings>
