@@ -47,11 +47,11 @@ fi
 while [ $# -gt 0 ]
 do case "$1" in
    -d | --description )
-     printf "edit4ever - tv_grab_zap2xml is a simple wrapper for zap2xml.py\n"
+     printf "tv_grab_zap2xml is a simple wrapper for zap2xml.py\n"
      ;;
 
    -v | --version )
-     printf "0.5.5\n"
+     printf "0.6.0\n"
      ;;
 
    -c | --capabilities )
