@@ -328,16 +328,26 @@ def on_td (self, tag, attrs):
                     programs[cp]["genres"]["movie"] = 1
                 elif re.search('zc-g-S',my_dict[cls]):
                     programs[cp]["genres"]["sports"] = 1
-
-#                if re.search('^MV',cp):
-#                    programs[cp]["genres"]["movie"] = 1
-#                elif re.search('^SP',cp):
-#                    programs[cp]["genres"]["sports"] = 1
-#                elif re.search('^EP',cp):
-#                    programs[cp]["genres"]["series"] = 9
-#                elif re.search('^SH',cp) and "-j" in options:
-#                    programs[cp]["genres"]["series"] = 9
-
+                    
+                if re.search('^MV',cp):
+                    programs[cp]["type"] = "Movie"
+                    #programs[cp]["genres"]["movie"] = 1
+                    #log.pout(cp)
+                elif re.search('^SP',cp):
+                    programs[cp]["type"] = "Sports"
+                    #programs[cp]["genres"]["sports"] = 1
+                elif re.search('^EP',cp):
+                    programs[cp]["type"] = "Series"
+                    #programs[cp]["genres"]["series"] = 9
+                elif re.search('^SH',cp):
+                    if re.search('^SH00000001',cp):
+                        programs[cp]["type"] = "Ad"
+                    else:
+                        programs[cp]["type"] = "Show"
+                    #programs[cp]["genres"]["show"] = 9
+                else:
+                    programs[cp]["type"] = ""
+                    
                 if cp != -1 and "-D" in options:
                     fn = os.path.join(cacheDir,cp + ".js.gz")
                     if not os.path.isfile(fn):
@@ -1588,7 +1598,21 @@ def addXDetails(program, schedule):
         episqts = '\"' + enc(program['episode']) + '\"' + space
     if 'description' in program:
         plot = enc(program['description'])
-
+    if 'genres' in program:
+        prev = None
+        for g in program['genres']:
+            g = g[0].upper() + g[1:]
+            if 'Series' not in g:
+                if prev is None:
+                    genres = g
+                    prev = 1
+                else:
+                    genres = genres + ", " + g
+                    
+        #log.pout(str(program['genres']),'debug')
+    if program['type']:
+        showType = program['type']
+        #log.pout(str(program['type']),'debug')
     if "-V" in options:
         optList = ast.literal_eval(options["-V"])
         descsort = "".join(makeDescsortList(optList))
