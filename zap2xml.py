@@ -342,17 +342,25 @@ def on_td (self, tag, attrs):
                     fn = os.path.join(cacheDir,cp + ".js.gz")
                     if not os.path.isfile(fn):
                         data = getURL(urlRoot + "gridDetailService?pgmId=" + cp)
-                        wbf(fn, data)
+                        if data: #sometimes we fail to get the url try to keep going
+                            wbf(fn, data)
+                    if os.path.isfile(fn):
                         log.pout("[D] Parsing: " + cp,'info')
-                    parseJSOND(fn)
+                        parseJSOND(fn)
+                    else:
+                        log.pout("[D] Failed to download: " + cp,'info')
                 if "-I" in options:
                     fn = os.path.join(cacheDir,"I" + cp + ".js.gz")
                     if not os.path.isfile(fn):
                         data = getURL(urlRoot + "gridDetailService?rtype=pgmimg&pgmId=" + cp)
                         if data: #sometimes we fail to get the url try to keep going
                             wbf(fn, data)
-                            log.pout("[I] Parsing: " + str(cp),'info')
-                    parseJSONI(fn)
+                    if os.path.isfile(fn):
+                        log.pout("[I] Parsing: " + str(cp),'info')
+                        parseJSONI(fn)
+                    else:
+                        log.pout("[I] Failed to download: " + str(cp),'info')
+
         elif re.search('zc-st',my_dict[cls]):
             inStationTd = 1
 
@@ -845,9 +853,12 @@ def parseJSONI(fn):
         b = f.read()
         f.close()
     b = re.sub("'","\"",b)
-    t = json.loads(b)
-    if "imageUrl" in t and re.search("^http",t["imageUrl"],re.IGNORECASE):
-        programs[cp]["imageUrl"] = t["imageUrl"]
+    try:
+        t = json.loads(b)
+        if "imageUrl" in t and re.search("^http",t["imageUrl"],re.IGNORECASE):
+            programs[cp]["imageUrl"] = t["imageUrl"]
+    except ValueError:
+        log.pout("[I] Skipping: " + cp,'info')
 
 
 def parseJSOND(fn):
@@ -857,60 +868,63 @@ def parseJSOND(fn):
         f.close()
     # todo figure out this re
     b = re.sub("^.+?\=","",b,re.IGNORECASE|re.MULTILINE)
-    t = json.loads(b)
-    p=t["program"]
-    #todo remove xtra var like sn
-    if "seasonNumber" in p:
-        sn = p["seasonNumber"]
-        sn = re.sub("S","",sn,re.IGNORECASE)
-        if sn != '':
-            programs[cp]["seasonNum"] = sn
+    try:
+        t = json.loads(b)
+        p=t["program"]
+        #todo remove xtra var like sn
+        if "seasonNumber" in p:
+            sn = p["seasonNumber"]
+            sn = re.sub("S","",sn,re.IGNORECASE)
+            if sn != '':
+                programs[cp]["seasonNum"] = sn
 
-    if "episodeNumber" in p:
-        en = p["episodeNumber"]
-        en = re.sub("E","",en,re.IGNORECASE)
-        if en != '':
-            programs[cp]["episodeNum"] = en
+        if "episodeNumber" in p:
+            en = p["episodeNumber"]
+            en = re.sub("E","",en,re.IGNORECASE)
+            if en != '':
+                programs[cp]["episodeNum"] = en
 
-    if "originalAirDate" in p:
-        oad = p["originalAirDate"]
-        if oad != '':
-            programs[cp]["originalAirDate"] = oad
+        if "originalAirDate" in p:
+            oad = p["originalAirDate"]
+            if oad != '':
+                programs[cp]["originalAirDate"] = oad
 
-    if "description" in p:
-        desc = p["description"]
-        if desc != '':
-            programs[cp]["description"] = desc
+        if "description" in p:
+            desc = p["description"]
+            if desc != '':
+                programs[cp]["description"] = desc
 
-    if "genres" in p:
-        genres = p["genres"]
-        i = 1
-        for g in genres:
-            programs[cp]["genres"][g.lower()] = i
-            i += 1
+        if "genres" in p:
+            genres = p["genres"]
+            i = 1
+            for g in genres:
+                programs[cp]["genres"][g.lower()] = i
+                i += 1
 
-    if "seriesId" in p:
-        seriesId = p["seriesId"]
-        if seriesId != '':
-            programs[cp]["genres"]["series"] = 9
+        if "seriesId" in p:
+            seriesId = p["seriesId"]
+            if seriesId != '':
+                programs[cp]["genres"]["series"] = 9
 
-    if "credits" in p:
-        credits = p["credits"]
-        i = 1
-        if "credits" not in programs[cp]:
-            programs[cp]["credits"] = {}
-        for g in credits:
-            programs[cp]["credits"][g] = i
-            i += 1
+        if "credits" in p:
+            credits = p["credits"]
+            i = 1
+            if "credits" not in programs[cp]:
+                programs[cp]["credits"] = {}
+            for g in credits:
+                programs[cp]["credits"][g] = i
+                i += 1
 
-    if "starRating" in p:
-        sr = p["starRating"]
-        tsr = len(sr)
-        if re.search("\+$",sr):
-            tsr -= 1
-            tsr += 0.5
-        programs[cp]["starRating"] = str(tsr)
+        if "starRating" in p:
+            sr = p["starRating"]
+            tsr = len(sr)
+            if re.search("\+$",sr):
+                tsr -= 1
+                tsr += 0.5
+            programs[cp]["starRating"] = str(tsr)
 
+    except ValueError:
+        log.pout("[D] Skipping: " + cp,'info')
 
 
 def parseTVGFavs(data):
