@@ -21,6 +21,8 @@ import urllib
 import inspect
 import urllib2
 import datetime
+import ast
+
 """
 import requests
 from requests.auth import HTTPBasicAuth
@@ -34,7 +36,6 @@ LWP::UserAgent #www.mechanize
 XML::LibXML
 libxml2
 lxml
-
 """
 
 
@@ -83,14 +84,22 @@ log = Zap2xmllog()
 log.setDebug()
 operSys = platform.uname()[0]
 log.pout(repr(platform.uname()),'info',printOut = False)
+
+#set paths to import third party libs
 kodiPath = '/storage/.kodi/addons/'
 mechLib = 'script.module.mechanize/lib'
+soupLib = 'script.module.beautifulsoup/lib'
 if re.search('openelec', platform.uname()[1], re.IGNORECASE) or os.path.exists(kodiPath):
     log.pout("Found openelec node name or " + kodiPath,'info',printOut = False)
     if os.path.exists(kodiPath + mechLib):
         sys.path.append(kodiPath + mechLib)
     else: log.pout("Mechanize addon not installed error",'error')
+    if os.path.exists(kodiPath + soupLib):
+    	sys.path.append(kodiPath + soupLib)
+    else: log.pout("BeautifulSoup addon not installed error",'error')
+
 import mechanize
+from BeautifulSoup import BeautifulStoneSoup
 
 #log.pout("Test", 'debug', func=True)
 # try:
@@ -333,17 +342,25 @@ def on_td (self, tag, attrs):
                     fn = os.path.join(cacheDir,cp + ".js.gz")
                     if not os.path.isfile(fn):
                         data = getURL(urlRoot + "gridDetailService?pgmId=" + cp)
-                        wbf(fn, data)
+                        if data: #sometimes we fail to get the url try to keep going
+                            wbf(fn, data)
+                    if os.path.isfile(fn):
                         log.pout("[D] Parsing: " + cp,'info')
-                    parseJSOND(fn)
+                        parseJSOND(fn)
+                    else:
+                        log.pout("[D] Failed to download: " + cp,'info')
                 if "-I" in options:
                     fn = os.path.join(cacheDir,"I" + cp + ".js.gz")
                     if not os.path.isfile(fn):
                         data = getURL(urlRoot + "gridDetailService?rtype=pgmimg&pgmId=" + cp)
                         if data: #sometimes we fail to get the url try to keep going
                             wbf(fn, data)
-                            log.pout("[I] Parsing: " + cp,'info')
-                    parseJSONI(fn)
+                    if os.path.isfile(fn):
+                        log.pout("[I] Parsing: " + str(cp),'info')
+                        parseJSONI(fn)
+                    else:
+                        log.pout("[I] Failed to download: " + str(cp),'info')
+
         elif re.search('zc-st',my_dict[cls]):
             inStationTd = 1
 
@@ -836,9 +853,12 @@ def parseJSONI(fn):
         b = f.read()
         f.close()
     b = re.sub("'","\"",b)
-    t = json.loads(b)
-    if "imageUrl" in t and re.search("^http",t["imageUrl"],re.IGNORECASE):
-        programs[cp]["imageUrl"] = t["imageUrl"]
+    try:
+        t = json.loads(b)
+        if "imageUrl" in t and re.search("^http",t["imageUrl"],re.IGNORECASE):
+            programs[cp]["imageUrl"] = t["imageUrl"]
+    except ValueError:
+        log.pout("[I] Skipping: " + cp,'info')
 
 
 def parseJSOND(fn):
@@ -848,60 +868,63 @@ def parseJSOND(fn):
         f.close()
     # todo figure out this re
     b = re.sub("^.+?\=","",b,re.IGNORECASE|re.MULTILINE)
-    t = json.loads(b)
-    p=t["program"]
-    #todo remove xtra var like sn
-    if "seasonNumber" in p:
-        sn = p["seasonNumber"]
-        sn = re.sub("S","",sn,re.IGNORECASE)
-        if sn != '':
-            programs[cp]["seasonNum"] = sn
+    try:
+        t = json.loads(b)
+        p=t["program"]
+        #todo remove xtra var like sn
+        if "seasonNumber" in p:
+            sn = p["seasonNumber"]
+            sn = re.sub("S","",sn,re.IGNORECASE)
+            if sn != '':
+                programs[cp]["seasonNum"] = sn
 
-    if "episodeNumber" in p:
-        en = p["episodeNumber"]
-        en = re.sub("E","",en,re.IGNORECASE)
-        if en != '':
-            programs[cp]["episodeNum"] = en
+        if "episodeNumber" in p:
+            en = p["episodeNumber"]
+            en = re.sub("E","",en,re.IGNORECASE)
+            if en != '':
+                programs[cp]["episodeNum"] = en
 
-    if "originalAirDate" in p:
-        oad = p["originalAirDate"]
-        if oad != '':
-            programs[cp]["originalAirDate"] = oad
+        if "originalAirDate" in p:
+            oad = p["originalAirDate"]
+            if oad != '':
+                programs[cp]["originalAirDate"] = oad
 
-    if "description" in p:
-        desc = p["description"]
-        if desc != '':
-            programs[cp]["description"] = desc
+        if "description" in p:
+            desc = p["description"]
+            if desc != '':
+                programs[cp]["description"] = desc
 
-    if "genres" in p:
-        genres = p["genres"]
-        i = 1
-        for g in genres:
-            programs[cp]["genres"][g.lower()] = i
-            i += 1
+        if "genres" in p:
+            genres = p["genres"]
+            i = 1
+            for g in genres:
+                programs[cp]["genres"][g.lower()] = i
+                i += 1
 
-    if "seriesId" in p:
-        seriesId = p["seriesId"]
-        if seriesId != '':
-            programs[cp]["genres"]["series"] = 9
+        if "seriesId" in p:
+            seriesId = p["seriesId"]
+            if seriesId != '':
+                programs[cp]["genres"]["series"] = 9
 
-    if "credits" in p:
-        credits = p["credits"]
-        i = 1
-        if"credits" not in programs[cp]:
-            programs[cp]["credits"] = {}
-        for g in credits:
-            programs[cp]["credits"][g] = i
-            i += 1
+        if "credits" in p:
+            credits = p["credits"]
+            i = 1
+            if "credits" not in programs[cp]:
+                programs[cp]["credits"] = {}
+            for g in credits:
+                programs[cp]["credits"][g] = i
+                i += 1
 
-    if "starRating" in p:
-        sr = p["starRating"]
-        tsr = len(sr)
-        if re.search("\+$",sr):
-            tsr -= 1
-            tsr += 0.5
-        programs[cp]["starRating"] = str(tsr)
+        if "starRating" in p:
+            sr = p["starRating"]
+            tsr = len(sr)
+            if re.search("\+$",sr):
+                tsr -= 1
+                tsr += 0.5
+            programs[cp]["starRating"] = str(tsr)
 
+    except ValueError:
+        log.pout("[D] Skipping: " + cp,'info')
 
 
 def parseTVGFavs(data):
@@ -1227,13 +1250,19 @@ def enc(strng):
     global options
     t = strng
     if "-E" not in options:
-        t = re.sub("&[^#]","&amp; ",t)
+        t = unicode(BeautifulStoneSoup(t, convertEntities=BeautifulStoneSoup.ALL_ENTITIES))
+        t = re.sub("&#160;\'","\'",t)           #needed to fix screener guide listing error - &#039;
+#        t = re.sub("&","&amp;",t)
         t = re.sub("\"","&quot;",t)
-        t = re.sub("\'","&apos;",t)
+#        t = re.sub("\'","&apos;",t)
         t = re.sub("<","&lt;",t)
         t = re.sub(">","&gt;",t)
+        t = re.sub("``","&quot;",t)             #needed to fix screener guide listing errors
+        t = re.sub("\'\'","&quot;",t)           #needed to fix screener guide listing errors
+        t = re.sub("&apos;&apos;","&quot;",t)   #needed to fix screener guide listing errors
+
     else:
-        if re.search("amp",options["-E"]): t = re.sub("&[^#]","&amp; ",t)
+        if re.search("amp",options["-E"]): t = re.sub("&","&amp;",t)
         if re.search("quot",options["-E"]): t = re.sub("\"","&quot;",t)
         if re.search("apos",options["-E"]): t = re.sub("\'","&apos;",t)
         if re.search("lt",options["-E"]): t = re.sub("<","&lt;",t)
@@ -1241,7 +1270,6 @@ def enc(strng):
     # if "-e" in options:
     #     t = re.sub("([^\x20-\x7F])",hex2dec_e,t)  # handled by html parser make it unicode
     #     #$t =~ s/([^\x20-\x7F])/'&#' . ord($1) . ';'/gse;
-
 
     return t # unicodeData
 
@@ -1253,7 +1281,7 @@ def printHeader(fh , enc):
     fh.write("<tv source-info-url=\"http://tvguide.com/\" source-info-name=\"tvguide.com\"")
   else:
     fh.write("<tv source-info-url=\"http://tvschedule.zap2it.com/\" source-info-name=\"zap2it.com\"")
-  fh.write(" generator-info-name=\"script.module.zap2xml\" generator-info-url=\"https://github.com/edit4ever/script.module.zap2xml\">\n")
+  fh.write(" generator-date=\"" + str(datetime.datetime.now()) + "\" generator-info-name=\"script.module.zap2xml\" generator-info-url=\"https://github.com/edit4ever/script.module.zap2xml\">\n")
 
 def printFooter(fh):
   fh.write("</tv>\n")
@@ -1345,107 +1373,19 @@ def printProgrammes(fh):
             fh.write("</sub-title>\n")
 
         if "description" in programs[p] and programs[p]["description"] is not None:
-            fh.write("\t\t<desc lang=\"" + lang + "\">")
-            tmp = enc(programs[p]["description"]) + " "
-            end = "</desc>\n"
+            xdets = ""
+            tmp = enc(programs[p]["description"])
             if "-X" in options:
-                ratings = ""
-                date=""
-                new = ""
-                live = ""
-                hd = ""
-                cc = ""
-                cast = ""
-                bullet = u" \u2022 "
-                if "originalAirDate" in programs[p]:
-                    origdate = enc(convDateLocal(programs[p]["originalAirDate"]))
-                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
-                    date = "First aired: " + finaldate
-                if "movie_year" in programs[p]:
-                    date = "Released: " + programs[p]["movie_year"]
-                if "rating" in programs[p]:
-                    ratings = enc(programs[p]["rating"]) + bullet
-                if "new" in schedule[station][s]:
-                    new = "NEW" + bullet
-                    origdate = startTime
-                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
-                    date = "First aired: " + finaldate
-                if "live" in schedule[station][s]:
-                    live = "LIVE" + bullet
-                    origdate = startTime
-                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
-                    date = "First aired: " + finaldate
-                if "quality" in schedule[station][s]:
-                    hd = "HD" + bullet
-                if "cc" in schedule[station][s]:
-                    cc = "CC" + bullet
-                if "credits" in programs[p]:
-                    sortThing1= str(p)
-                    sortThing2 = "credits"
-                    cast = "Cast: "
-                    castlist = ""
-                    prev = None
-                    for g in sorted(programs[p]["credits"], cmp=sortThings):
-                        if prev is None:
-                            castlist = enc(g)
-                            prev = g
-                        else:
-                            castlist = castlist + ", " + enc(g)
-                    cast = cast + castlist + bullet
-                tmp = tmp + live + new + ratings + hd + cc + cast + date
-            tmp = tmp + end
-            fh.write(tmp)
+                xdets = addXDetails(programs[p], schedule[station][s])
+                fh.write("\t\t<desc lang=\"" + lang + "\">" + xdets + "</desc>\n")
+            else:
+                fh.write("\t\t<desc lang=\"" + lang + "\">" + tmp + "</desc>\n")
         else:
-            fh.write("\t\t<desc lang=\"" + lang + "\">")
-            tmp = ""
-            end = "</desc>\n"
             if "-X" in options:
-                ratings = ""
-                date=""
-                new = ""
-                live = ""
-                hd = ""
-                cc = ""
-                cast = ""
-                bullet = u" \u2022 "
-                if "originalAirDate" in programs[p]:
-                    origdate = enc(convDateLocal(programs[p]["originalAirDate"]))
-                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
-                    date = "First aired: " + finaldate
-                if "movie_year" in programs[p]:
-                    date = "Released: " + programs[p]["movie_year"]
-                if "rating" in programs[p]:
-                    ratings = enc(programs[p]["rating"]) + bullet
-                if "new" in schedule[station][s]:
-                    new = "NEW" + bullet
-                    origdate = startTime
-                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
-                    date = "First aired: " + finaldate
-                if "live" in schedule[station][s]:
-                    live = "LIVE" + bullet
-                    origdate = startTime
-                    finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
-                    date = "First aired: " + finaldate
-                if "quality" in schedule[station][s]:
-                    hd = "HD" + bullet
-                if "cc" in schedule[station][s]:
-                    cc = "CC" + bullet
-                if "credits" in programs[p]:
-                    sortThing1= str(p)
-                    sortThing2 = "credits"
-                    cast = "Cast: "
-                    castlist = ""
-                    prev = None
-                    for g in sorted(programs[p]["credits"], cmp=sortThings):
-                        if prev is None:
-                            castlist = enc(g)
-                            prev = g
-                        else:
-                            castlist = castlist + ", " + enc(g)
-                    cast = cast + castlist + bullet
-                tmp = tmp + live + new + ratings + hd + cc + cast + date
-            tmp = tmp + end
-            fh.write(tmp)
+                xdets = addXDetails(programs[p], schedule[station][s])
+                fh.write("\t\t<desc lang=\"" + lang + "\">" + xdets + "</desc>\n")
+            else:
+                fh.write("\t\t<desc lang=\"" + lang + "\">" + "</desc>\n")
 
         if "credits" in programs[p]:
             fh.write("\t\t<credits>\n")
@@ -1485,7 +1425,6 @@ def printProgrammes(fh):
             xe = int(e) - 1
             if int(ss) > 0 or int(e) > 0:
                 fh.write("\t\t<episode-num system=\"onscreen\">" + sf + ef + "</episode-num>\n")
-
         dd_prog_id = str(p)
         tmp = re.search("^(..\d{8})(\d{4})",dd_prog_id)
         if tmp:
@@ -1496,7 +1435,7 @@ def printProgrammes(fh):
         if "quality" in  schedule[station][s]:
             fh.write("\t\t<video>\n")
             fh.write("\t\t\t<aspect>16:9</aspect>\n")
-            fh.write("\t\t\t<quality>HDTV</quality>\n")
+            fh.write("\t\t\t<quality>" + schedule[station][s]['quality'] + "</quality>\n")
             fh.write("\t\t</video>\n")
 
         new = False
@@ -1530,6 +1469,148 @@ def printProgrammes(fh):
         fh.write("\t</programme>\n")
         i += 1
 
+
+def addXDetails(program, schedule):
+
+    ratings = ""
+    date = ""
+    myear = ""
+    new = ""
+    live = ""
+    hd = ""
+    cc = ""
+    cast = ""
+    season = ""
+    epis = ""
+    episqts = ""
+    prog = ""
+    plot= ""
+    descsort = ""
+    bullet = u"\u2022 "
+    hyphen = u"\u2013 "
+    newLine = "\n"
+    space = " "
+    colon = u"\u003A "
+    vbar = u"\u007C "
+    slash = u"\u2215 "
+    comma = u"\u002C "
+
+    def getSortName(opt):
+        return {
+            1: bullet,
+            2: newLine,
+            3: hyphen,
+            4: space,
+            5: colon,
+            6: vbar,
+            7: slash,
+            8: comma,
+            9: plot,
+            10: new,
+            11: hd,
+            12: cc,
+            13: season,
+            14: ratings,
+            15: date,
+            16: prog,
+            17: epis,
+            18: episqts,
+            19: cast,
+            20: myear,
+
+        }.get(opt, None)
+
+    def cleanSortList(optList):
+        cleanList=[]
+        optLen = len(optList)
+        for opt in optList:
+            thisOption = getSortName(int(opt))
+            if thisOption:
+                cleanList.append(int(opt))
+
+        for item in reversed(cleanList):
+            if cleanList[-1] <= 8:
+                del cleanList[-1]
+
+        #print cleanList
+        return cleanList
+
+    def makeDescsortList(optList):
+        sortOrderList =[]
+        lastOption = 1
+        cleanedList = cleanSortList(optList)
+        for opt in cleanedList:
+            thisOption = getSortName(int(opt))
+            #print "opt: "+str(opt)+" this: "+str(thisOption)+" last: "+str(lastOption)
+            if int(opt) <= 8 and lastOption <= 8:
+                lastOption = int(opt)
+            elif thisOption and lastOption:
+                sortOrderList.append(thisOption)
+                lastOption = int(opt)
+            elif thisOption:
+                lastOption = int(opt)
+
+        return sortOrderList
+    startTime = convTime(schedule["time"])
+    if "originalAirDate" in program and not new and not live:
+        origdate = enc(convDateLocal(program["originalAirDate"]))
+        finaldate = datetime.datetime.strptime(origdate, "%Y%m%d").strftime('%B %d, %Y')
+        date = "First aired: " + finaldate + space
+    if "movie_year" in program:
+        myear = "Released: " + program["movie_year"] + space
+    if "rating" in program:
+        ratings = enc(program["rating"]) + space
+    if "new" in schedule:
+        new = "NEW "
+        origdate = startTime
+        finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
+        date = "First aired: " + finaldate + space
+    if "live" in schedule:
+        new = "LIVE "
+        origdate = startTime
+        finaldate = datetime.datetime.strptime(origdate, "%Y%m%d%H%M%S").strftime('%B %d, %Y')
+        date = "First aired: " + finaldate + space
+    if "quality" in schedule:
+        hd = schedule['quality'] + space
+    if "cc" in schedule:
+        cc = schedule['cc'] + space
+    if "seasonNum" in program and "episodeNum" in program:
+        ss = program["seasonNum"]
+        sf = "Season " + str(int(ss))
+        e = program["episodeNum"]
+        ef = "Episode " + str(int(e))
+        season = sf + " - " + ef + space
+
+    if "credits" in program:
+        #sortThing1 = str(program)
+        #sortThing2 = "credits"
+        cast = "Cast: "
+        castlist = ""
+        prev = None
+        for g in program["credits"]:
+            if prev is None:
+                castlist = enc(g)
+                prev = g
+            else:
+                castlist = castlist + ", " + enc(g)
+        cast = cast + castlist + space
+
+    if 'title' in program:
+        prog = enc(program['title']) + space
+    if 'episode' in program:
+        epis = enc(program['episode']) + space
+        episqts = '\"' + enc(program['episode']) + '\"' + space
+    if 'description' in program:
+        plot = enc(program['description'])
+
+    if "-V" in options:
+        optList = ast.literal_eval(options["-V"])
+        descsort = "".join(makeDescsortList(optList))
+    else:
+        descDefault = [4,1,5,1,6,1,7,1,8,1,9,1,10]
+        descsort = "".join(makeDescsortList(descDefault))
+
+    return descsort
 
 def printHeaderXTVD(fh, enc):
     global XTVD_startTime, XTVD_endTime
@@ -1716,10 +1797,10 @@ def option_parse():
     global options
     global confFile, start, days, ncdays, ncsdays, retries, outFile, cacheDir, iconDir, trailerDir
     global lang, userEmail, password, proxy, postalcode, lineupId, sleeptime, shiftMinutes
-    global outputXTVD, includeXMLTV, lineuptype, lineupname, lineuplocation, zlineupId, zipcode
+    global outputXTVD, includeXMLTV, lineuptype, lineupname, lineuplocation, zlineupId, zipcode, descsort
 
     optlist = args = None
-    optlist, args  = getopt.getopt(sys.argv[1:], "?aA:bc:C:d:DeE:Fgi:Il:jJ:Lm:Mn:N:o:Op:P:qr:s:S:t:Tu:UwxY:zZ:X")
+    optlist, args  = getopt.getopt(sys.argv[1:], "?aA:bc:C:d:DeE:Fgi:Il:jJ:Lm:Mn:N:o:Op:P:qr:s:S:t:Tu:UwxY:zZ:XV:")
     options = dict(optlist)
     if "-?" in options:
         printHelp()
@@ -1771,6 +1852,8 @@ def option_parse():
                 lineuplocation = rtrim(last_reSearchObj.group(1))
             elif reSearch("^\s*postalcode\s*=\s*(.+)", conf,re.IGNORECASE):
                 postalcode = rtrim(last_reSearchObj.group(1))
+            elif reSearch("^\s*descsort\s*=\s*(.+)", conf,re.IGNORECASE):
+                descsort = rtrim(last_reSearchObj.group(1))
 
 
     if optlist is None and userEmail is None:
@@ -1797,6 +1880,7 @@ def option_parse():
     if "-J" in options and os.path.exists(options["-J"]): includeXMLTV = options["-J"]
     if "-S" in options: sleeptime = float(options["-S"])
     if "-m" in options: shiftMinutes = int(options["-m"])
+    if "-V" in options: descsort = options["-V"]
 
 
 

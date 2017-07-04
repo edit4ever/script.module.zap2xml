@@ -20,4 +20,5 @@
 import xbmcgui
 
 dialog = xbmcgui.Dialog()
-dialog.ok('', 'This is a console-only addon')
+if dialog.yesno('This is addon runs from within Tvheadend', 'Add your zap2it/screener/tvguide login info in the addon configuration.  Reboot and setup the grabber in tvheadend before enabling the other options.'):
+    xbmc.executebuiltin(Addon.OpenSettings())
