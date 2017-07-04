@@ -1252,9 +1252,9 @@ def enc(strng):
     if "-E" not in options:
         t = unicode(BeautifulStoneSoup(t, convertEntities=BeautifulStoneSoup.ALL_ENTITIES))
         t = re.sub("&#160;\'","\'",t)           #needed to fix screener guide listing error - &#039;
-        t = re.sub("&","&amp;",t)
+#        t = re.sub("&","&amp;",t)
         t = re.sub("\"","&quot;",t)
-        t = re.sub("\'","&apos;",t)
+#        t = re.sub("\'","&apos;",t)
         t = re.sub("<","&lt;",t)
         t = re.sub(">","&gt;",t)
         t = re.sub("``","&quot;",t)             #needed to fix screener guide listing errors
