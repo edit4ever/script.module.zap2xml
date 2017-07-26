@@ -1223,9 +1223,11 @@ def incXML (st, en, fh):
 # these cmp func need to be key objs too lazy right now
 def sortChan(a,b):
     global stations
-
+    p = re.compile("\d+\.\d+")
     if "order" in stations[a] and "order" in stations[b]:
-        tmp = float(stations[a]["order"]) - float(stations[b]["order"])
+        ma = p.search(stations[a]["order"])
+        mb = p.search(stations[b]["order"])
+        tmp = float(ma.group()) - float(mb.group())
         if tmp < 0.00:
             return -1
         if tmp == 0.00:
@@ -1239,7 +1241,6 @@ def sortChan(a,b):
             return 0
         if stations[a]["name"] > stations[b]["name"]:
             return 1
-
 
 def hex2dec_e(matchObj):
     return "%s%d%s" % ('&#',ord(matchObj.group(1)),';')
