@@ -150,7 +150,7 @@ tvgurl = 'http://www.tvguide.com/'
 br = None #browser global
 gridHours = 0
 loggedinMatchZ = 0
-loggedinStr = '.*Logout of your Zap2it account.*'
+loggedinStr = '.*Logout of your.*'
 programs = {}
 cp = None
 stations = {}
@@ -341,9 +341,12 @@ def on_td (self, tag, attrs):
                 if cp != -1 and "-D" in options:
                     fn = os.path.join(cacheDir,cp + ".js.gz")
                     if not os.path.isfile(fn):
-                        data = getURL(urlRoot + "gridDetailService?pgmId=" + cp)
-                        if data: #sometimes we fail to get the url try to keep going
-                            wbf(fn, data)
+                        try:
+                            data = getURL(urlRoot + "gridDetailService?pgmId=" + cp)
+                            if data: #sometimes we fail to get the url try to keep going
+                                wbf(fn, data)
+                        except:
+                            pass
                     if os.path.isfile(fn):
                         log.pout("[D] Parsing: " + cp,'info')
                         parseJSOND(fn)
@@ -1224,23 +1227,22 @@ def incXML (st, en, fh):
 def sortChan(a,b):
     global stations
     p = re.compile("\d+\.\d+")
-    if "order" in stations[a] and "order" in stations[b]:
-        ma = p.search(stations[a]["order"])
-        mb = p.search(stations[b]["order"])
-        tmp = float(ma.group()) - float(mb.group())
-        if tmp < 0.00:
-            return -1
-        if tmp == 0.00:
-            return 0
-        if tmp > 0.00:
-            return 1
-    else:
-        if stations[a]["name"] < stations[b]["name"]:
-            return -1
-        if stations[a]["name"] == stations[b]["name"]:
-            return 0
-        if stations[a]["name"] > stations[b]["name"]:
-            return 1
+#    if "order" in stations[a] and "order" in stations[b]:
+#        ma = p.search(stations[a]["order"])
+#        mb = p.search(stations[b]["order"])
+#        tmp = float(ma.group()) - float(mb.group())
+#        if tmp < 0.00:
+#            return -1
+#        if tmp == 0.00:
+#            return 0
+#        if tmp > 0.00:
+#            return 1
+    if stations[a]["name"] < stations[b]["name"]:
+        return -1
+    if stations[a]["name"] == stations[b]["name"]:
+        return 0
+    if stations[a]["name"] > stations[b]["name"]:
+        return 1
 
 def hex2dec_e(matchObj):
     return "%s%d%s" % ('&#',ord(matchObj.group(1)),';')
