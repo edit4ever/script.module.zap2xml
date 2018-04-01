@@ -1,3 +1,14 @@
+# NO LONGER FUNCTIONS/SUPPORTED
+script.module.zap2xml is outdated due to changes to source information.
+
+Please use the new script.module.zap2epg:
+
+https://github.com/edit4ever/script.module.zap2epg
+
+
+---
+
+
 # script.module.zap2xml
 
 Zap2xml is an epg grabber which creates an xmltv file from data scraped from Zap2it or TVguide listings.
